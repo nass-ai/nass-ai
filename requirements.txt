@@ -1,0 +1,8 @@
+click
+gensim
+pandas
+sklearn
+nltk
+tqdm
+seaborn
+matplotlib
