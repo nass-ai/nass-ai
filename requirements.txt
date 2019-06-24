@@ -6,3 +6,5 @@ nltk
 tqdm
 seaborn
 matplotlib
+numpy
+keras

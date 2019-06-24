@@ -12,7 +12,7 @@ from code import get_path
 def nassai_cli(action, dbow_run_repeat, dbow_epoch, dbow, keras_batch, keras_epoch):
     if action == "preprocess":
         from code import preprocessing
-        data_path = get_path('code') + "/final_with_dates.csv"
+        data_path = get_path('data') + "/final_with_dates.csv"
         return preprocessing.preprocess_data(data_path)
     elif action == "train_doc2vec":
         from code.doc2vec_model import build_doc2vec_model, train_doc2vec_model
@@ -25,6 +25,10 @@ def nassai_cli(action, dbow_run_repeat, dbow_epoch, dbow, keras_batch, keras_epo
         return train_doc2vec_model(model, formatted_data, run_repeat=dbow_run_repeat, epochs=dbow_epoch, dbow=dbow)
     elif action == "train_doc2vec_mlp":
         from code.learners.doc2vec_mlp import train
+        data_path = get_path('data') + "/clean_data.csv"
+        return train(data_path, dbow=dbow, epochs=keras_epoch, batch=keras_batch)
+    elif action == "train_doc2vec_bilstm":
+        from code.learners.doc2vec_bilstm import train
         data_path = get_path('data') + "/clean_data.csv"
         return train(data_path, dbow=dbow, epochs=keras_epoch, batch=keras_batch)
 
