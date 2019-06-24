@@ -3,14 +3,6 @@
 Code for [add paper link here]()
 
 
-### Motivations
-Nigeria’s dying languages, [Warri carry last](https://www.vanguardngr.com/2017/02/nigerias-dying-languages-warri-carry-last)
-
-### Applications
-
-* Generating very large, high quality Yorùbá text corpora
-* Preprocessing text for training Yorùbá
-
 ### Dependencies
 * Python3 (tested on 3.5, 3.6, 3.7)
 * Install all dependencies: `pip3 install -r requirements.txt`
