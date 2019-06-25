@@ -64,13 +64,14 @@ class NassAITfidf:
         model_path = get_path('data') + '/tfidf.npz'
         if Path(model_path).is_file():
             print("tfidf file exist. Loading ..")
-            features = numpy.load(model_path)
+            load_tfidf = numpy.load(model_path)
+            train_features, test_features, y_train, y_test = load_tfidf['train'], load_tfidf['test'], load_tfidf['y_train'], load_tfidf['y_test']
         else:
             print("tfidf file does not exist. Creating ..")
             features = tfidf.fit_transform(self.data.clean_text).toarray()
-            numpy.savez_compressed(model_path, features)
+            train_features, test_features, y_train, y_test = train_test_split(features, self.data.category_id, test_size=0.2, random_state=42)
+            numpy.savez_compressed(model_path, train=train_features, test=test_features, y_train=y_train, y_test=y_test)
             print("Saved TFID ..")
-        train_features, test_features, y_train, y_test = train_test_split(features['arr_0'], self.data.category_id, test_size=0.2, random_state=42)
         clf_map = {"mlp": MLPClassifier(alpha=1, max_iter=1000), "mnb": MultinomialNB(), "svm": LinearSVC()}
         if self.clf in ['mnb', 'svm', 'mlp']:
             clf = clf_map.get(self.clf)
@@ -80,16 +81,18 @@ class NassAITfidf:
             print("done in %0.3fs" % (time() - t0))
             print()
             print("Running Validation on {0}".format(clf))
+            print()
             cv = ShuffleSplit(n_splits=5, test_size=0.2, random_state=0)
             for epoch in range(self.epoch_count):
                 accuracies = cross_validate(clf, train_features, y_train, scoring=scoring, cv=cv)
                 for fold, accuracy in enumerate(accuracies):
-                    print("Epoch {0}: Accuracy={1} F1={2}".format(fold, accuracies['test_acc'][fold - 1], accuracies['test_f1_micro'][fold - 1]))
+                    print("Fold {0}: Accuracy={1} F1={2}".format(fold, accuracies['test_acc'][fold - 1], accuracies['test_f1_micro'][fold - 1]))
             print("Scoring ...")
             y_pred = clf.predict(test_features)
             print(metrics.classification_report(y_test, y_pred, target_names=self.data['bill_class'].unique()))
             print()
-            print("Accuracy 0 : {}".format(metrics.accuracy_score(y_test, y_pred)))
+            print("Average Accuracy : {}".format(metrics.accuracy_score(y_test, y_pred)))
+            print("Average F1 : {}".format(metrics.f1_score(y_test, y_pred)))
             return True
         else:
             model_path = get_path('models/doc2vec')
