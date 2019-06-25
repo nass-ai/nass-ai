@@ -2,7 +2,7 @@ from code.utils import handle_format
 from sklearn.preprocessing import LabelEncoder
 import numpy
 from keras.utils import np_utils
-from code import get_path,VECTOR_SIZE, TEST_SIZE, VALIDATION_SIZE
+from code import VECTOR_SIZE
 
 
 def get_vectors(model, data, get_for='train'):
