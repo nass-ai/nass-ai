@@ -14,6 +14,7 @@ from sklearn.model_selection import train_test_split, cross_validate, ShuffleSpl
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import LinearSVC
 from sklearn.neural_network import MLPClassifier
+from sklearn import metrics
 
 from code import get_path
 from code.learners import encode_label
@@ -84,11 +85,11 @@ class NassAITfidf:
                 accuracies = cross_validate(clf, train_features, y_train, scoring=scoring, cv=cv)
                 for fold, accuracy in enumerate(accuracies):
                     print("Epoch {0}: Accuracy={1} F1={2}".format(fold, accuracies['test_acc'][fold - 1], accuracies['test_f1_micro'][fold - 1]))
-
             print("Scoring ...")
             y_pred = clf.predict(test_features)
-            from sklearn import metrics
             print(metrics.classification_report(y_test, y_pred, target_names=self.data['bill_class'].unique()))
+            print()
+            print("Accuracy 0 : {}".format(metrics.accuracy_score(y_test, y_pred)))
             return True
         else:
             model_path = get_path('models/doc2vec')
