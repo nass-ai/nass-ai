@@ -24,16 +24,16 @@ def build_doc2vec_model(data, dbow=True):
     test_formatted = handle_format(test, False)
     final = train_formatted + test_formatted
     print('Building Vocabulary')
-    model.build_vocab(final)
+    model.build_vocab([x for x in tqdm(final)])
     print('Vocabulary Built')
     return model, final
 
 
 def train_doc2vec_model(model, data, epochs=10, run_repeat=100, dbow=False):
     print('Training {model} Model'.format(model="DBOW" if dbow else "DM"))
-    print(run_repeat)
     for epoch in range(run_repeat):
-        model.train(utils.shuffle([data]), total_examples=len(data), epochs=epochs)
+        print("Epoch : {}".format(epoch))
+        model.train(utils.shuffle([x for x in tqdm(data)]), total_examples=len(data), epochs=epochs)
         model.alpha -= 0.002
         model.min_alpha = model.alpha
     print("Training complete. Saving model")

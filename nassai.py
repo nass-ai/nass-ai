@@ -5,10 +5,10 @@ from code import get_path
 @click.command()
 @click.argument('action', type=click.STRING)
 @click.option('--dbow_epoch', default=10, help='Number of epochs to train the dbow model for')
+@click.option('--dbow_run_repeat', default=100, help='Number of times to repeat the epochs for. Ideally would train for be dbow_epoch * dbow_run_repeat')
 @click.option('--dbow', type=click.BOOL, help='Uses DBOW if true. DM if false.')
 @click.option('--keras_batch', type=click.INT, default=200, help='Batch for training keras model')
 @click.option('--keras_epoch', type=click.INT, default=500, help='Epoch for training keras model')
-@click.option('--dbow_run_repeat', default=100, help='Number of times to repeat the epochs for. Ideally would train for be dbow_epoch * dbow_run_repeat')
 def nassai_cli(action, dbow_run_repeat, dbow_epoch, dbow, keras_batch, keras_epoch):
     if action == "preprocess":
         from code import preprocessing

@@ -14,7 +14,7 @@ from code.learners import get_vectors, encode_label
 def build_model():
     print('Building LSTM model...')
     model = Sequential()
-    model.add(Bidirectional(LSTM(256, activation="relu"), input_shape=(1, 300)))
+    model.add(Bidirectional(LSTM(256, activation="relu"), input_shape=(1, VECTOR_SIZE)))
     model.add(Dropout(0.3))
     model.add(Dense(8, init='normal', activation="softmax"))
     optimizer = Adam(lr=0.0001)
