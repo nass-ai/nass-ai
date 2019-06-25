@@ -70,7 +70,7 @@ class NassAITfidf:
             features = tfidf.fit_transform(self.data.clean_text).toarray()
             numpy.savez_compressed(model_path, features)
             print("Saved TFID ..")
-        train_features, test_features, y_train, y_test = train_test_split(features, self.data.category_id, test_size=0.2, random_state=42)
+        train_features, test_features, y_train, y_test = train_test_split(features['arr_0'], self.data.category_id, test_size=0.2, random_state=42)
         clf_map = {"mlp": MLPClassifier(alpha=1, max_iter=1000), "mnb": MultinomialNB(), "svm": LinearSVC()}
         if self.clf in ['mnb', 'svm', 'mlp']:
             clf = clf_map.get(self.clf)
