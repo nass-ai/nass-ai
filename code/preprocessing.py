@@ -3,7 +3,7 @@ import re
 import string
 import nltk
 from nltk.corpus import stopwords
-from code import get_path
+from code.utils import get_path
 
 nltk.download('stopwords')
 
