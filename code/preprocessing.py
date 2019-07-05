@@ -12,7 +12,7 @@ def clean_text(text):
     text = re.sub(r"[^A-Za-z0-9^,!.\/'+-=]", " ", text)
     text = text.lower().split()
     stops = set(stopwords.words("english"))
-    text = [w for w in text if not w in stops]
+    text = [w for w in text if w not in stops]
     text = " ".join(text)
     text = text.translate(str.maketrans("", "", string.punctuation))
     return text

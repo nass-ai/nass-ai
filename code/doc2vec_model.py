@@ -3,13 +3,9 @@ from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from sklearn import utils
 from gensim.models import Doc2Vec
-from code import get_path
-from code.utils import handle_format
+from code.utils import get_path, handle_format, VECTOR_SIZE, TEST_SIZE
 
 tqdm.pandas(desc="progress-bar")
-
-VECTOR_SIZE = 300
-TEST_SIZE = 0.2
 
 
 def build_doc2vec_model(data, dbow=True):
