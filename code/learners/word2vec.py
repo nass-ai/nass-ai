@@ -67,7 +67,7 @@ class NassAIWord2Vec:
 
         sequence_input = Input(shape=(self.max_sequence_length,), dtype='int32')
         embedded_sequences = embedding_layer(sequence_input)
-        x = LSTM(128, dropout=0.2, recurrent_dropout=0.2)(embedded_sequences)
+        x = Bidirectional(LSTM(128, dropout=0.2, recurrent_dropout=0.2))(embedded_sequences)
         x = Dropout(0.2)(x)
         x = Dense(256, name='Dense_1', activation='relu')(x)
         x = Dropout(0.2)(x)

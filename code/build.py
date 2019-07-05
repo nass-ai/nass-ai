@@ -21,6 +21,7 @@ class BuildEmbeddingModel(object):
         texts = self.data.clean_text
         if self.embedding_type == "word2vec":
             model_data = [word.split(' ') for word in texts]
+            print("Initializing {0} model".format(self.embedding_type))
             model = Word2Vec(size=self.embedding_dim, window=5, min_count=5, workers=2, hs=1, sg=self.word2vec_mode, negative=5, alpha=0.065, min_alpha=0.065)
         else:
             train, test = train_test_split(texts, random_state=42, test_size=0.2)
@@ -44,7 +45,9 @@ class BuildEmbeddingModel(object):
             model.alpha -= 0.002
             model.min_alpha = model.alpha
         print("Training complete. Saving model")
-        model_path = get_path('models/doc2vec')
-        model_path = model_path + '/nassai_word2vec.vec' if self.embedding_type == "word2vec" else model_path + '/nassai_doc2vec.vec'
+        if self.embedding_type == "word2vec":
+            model_path = get_path('models/word2vec') + '/nassai_word2vec.vec'.format("cbow" if self.doc2vec_mode else "skipgram")
+        else:
+            model_path = get_path('models/doc2vec') + '/nassai_{0}_doc2vec.vec'.format("dbow" if self.doc2vec_mode else "dm")
         model.save(model_path)
         return True
