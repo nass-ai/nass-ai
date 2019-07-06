@@ -13,7 +13,7 @@ from code.build import BuildEmbeddingModel
 @click.option('--cbow', type=click.INT, default=1, help='Uses DBOW if true. DM if false.')
 @click.option('--batch', type=click.INT, default=200, help='Batch for training keras model')
 @click.option('--epoch', type=click.INT, default=200, help='Epoch for training keras model')
-@click.option('--clf', type=click.Choice(['cnn', 'bilstm', 'svm', 'mlp_sklearn', 'mlp', 'logreg', 'mnb', 'best']), help='Algorithm to train data on.')
+@click.option('--clf', type=click.Choice(['cnn', 'bilstm', 'svm', 'mlp_sklearn', 'mlp', 'random_forest', 'logreg', 'mnb', 'best', 'svm_linear']), help='Algorithm to train data on.')
 @click.option('--mode', type=click.Choice(['tfidf', 'doc2vec', 'word2vec']), help='Algorithm to train data on.')
 @click.option('--text', type=click.STRING, help="String to predict for")
 def nassai_cli(action, cbow, batch, epoch, clf, dbow, mode, text, use_glove=1):
