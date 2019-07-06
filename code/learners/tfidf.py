@@ -12,8 +12,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, cross_validate, ShuffleSplit, KFold
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
-from sklearn.svm import LinearSVC
+from sklearn.svm import LinearSVC, SVC
 from sklearn.neural_network import MLPClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
 from keras.preprocessing.text import Tokenizer
 
@@ -129,8 +130,10 @@ class NassAITfidf:
         if self.clf in ["svm", "mlp_sklearn", "mnb", "logreg"]:
             sklearn_clf_map = {"mlp_sklearn": ("mlp_sklearn", MLPClassifier(alpha=1, max_iter=1000, hidden_layer_sizes=(512, 256, 128), activation='relu')),
                                "logreg": ("logreg", LogisticRegression()),
-                               "svm": ("SVC", LinearSVC()),
-                               "mnb": ("mnb", MultinomialNB())}
+                               "svm_linear": ("Linear_SVC", LinearSVC()),
+			       "svm" : ("SVC", SVC()),
+                               "random_forest" : ("Random_Forest", RandomForestClassifier(n_estimators=100, max_depth=2,random_state=0)),
+				"mnb": ("mnb", MultinomialNB())}
 
             clf = sklearn_clf_map.get(self.clf)
             save_path = 'models/tfidf_{0}.pkl'.format(self.clf)
