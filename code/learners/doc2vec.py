@@ -1,12 +1,11 @@
 import numpy
 import pandas
 from gensim.models import Doc2Vec
-from keras import Input, Model
-from keras.initializers import Constant
-from keras.layers import Embedding, Flatten, Dense, Dropout, LSTM, GlobalMaxPooling1D, Conv1D, MaxPooling1D
-from keras.preprocessing.text import Tokenizer
-import keras_metrics
-from keras_preprocessing.sequence import pad_sequences
+from tensorflow.python.keras import Input, Model
+from tensorflow.python.keras.initializers import Constant
+from tensorflow.python.keras.layers import Embedding, Flatten, Dense, Dropout, LSTM, GlobalMaxPooling1D, Conv1D, MaxPooling1D
+from tensorflow.python.keras.preprocessing.text import Tokenizer
+from tensorflow.python.keras.preprocessing.sequence import pad_sequences
 from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, cross_validate, ShuffleSplit
@@ -14,7 +13,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
 
-from code.utils import get_path, encode_label, get_vectors
+from code.utils import get_path, encode_label, get_vectors, f1
 from code.utils import MeanEmbeddingVectorizer, handle_format
 
 
@@ -69,7 +68,7 @@ class NassAIDoc2Vec:
         model = Model(sequence_input, predictions)
         model.compile(loss='categorical_crossentropy',
                       optimizer='adam',
-                      metrics=['acc', keras_metrics.f1_score()])
+                      metrics=['acc', f1])
         return model
 
     def bilstm_model(self):
@@ -91,7 +90,7 @@ class NassAIDoc2Vec:
         model = Model(sequence_input, predictions)
         model.compile(loss='categorical_crossentropy',
                       optimizer='adam',
-                      metrics=['acc', keras_metrics.f1_score()])
+                      metrics=['acc', f1])
         return model
 
     def mlp_model(self):
@@ -115,8 +114,9 @@ class NassAIDoc2Vec:
         model = Model(sequence_input, predictions)
         model.compile(loss='categorical_crossentropy',
                       optimizer='adam',
-                      metrics=['acc', keras_metrics.f1_score()])
+                      metrics=['acc', f1])
         return model
+
     def train(self):
         print('Indexing word vectors.')
 

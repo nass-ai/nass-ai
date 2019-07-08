@@ -2,12 +2,11 @@ import numpy
 import pandas
 from gensim.models import Word2Vec
 from gensim.utils import simple_preprocess
-from keras import Input, Model
-from keras.initializers import Constant
-from keras.layers import Embedding, Reshape, Conv2D, MaxPool2D, Concatenate, Flatten, Dense, Dropout, Activation, Bidirectional, Conv1D, MaxPooling1D, GlobalMaxPooling1D, LSTM
-from keras.preprocessing.text import Tokenizer
-import keras_metrics
-from keras_preprocessing.sequence import pad_sequences
+from tensorflow.python.keras import Input, Model, Sequential
+from tensorflow.python.keras.initializers import Constant
+from tensorflow.python.keras.layers import Embedding, Dense, Bidirectional, Conv1D, MaxPooling1D, GlobalMaxPooling1D, LSTM, Dropout
+from tensorflow.python.keras.preprocessing.text import Tokenizer
+from tensorflow.python.keras.preprocessing.sequence import pad_sequences
 from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, cross_validate, ShuffleSplit
@@ -15,7 +14,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
 
-from code.utils import get_path, encode_label
+from code.utils import get_path, encode_label, f1
 from code.utils import MeanEmbeddingVectorizer, log_results
 
 
@@ -77,7 +76,7 @@ class NassAIWord2Vec:
         model = Model(sequence_input, predictions)
         model.compile(loss='categorical_crossentropy',
                       optimizer='adam',
-                      metrics=['acc', keras_metrics.f1_score()])
+                      metrics=['acc', f1])
         return model
 
     def cnn_model(self):
@@ -101,31 +100,21 @@ class NassAIWord2Vec:
         model = Model(sequence_input, predictions)
         model.compile(loss='categorical_crossentropy',
                       optimizer='adam',
-                      metrics=['acc', keras_metrics.f1_score()])
+                      metrics=['acc', f1])
         return model
 
     def mlp_model(self):
-        embedding_layer = Embedding(self.num_words,
-                                    self.embedding_dim,
-                                    embeddings_initializer=Constant(self.embedding_matrix),
-                                    input_length=self.max_sequence_length,
-                                    trainable=False)
-        sequence_input = Input(shape=(self.max_sequence_length,), dtype='int32')
-        embedded_sequences = embedding_layer(sequence_input)
-        x = Dense(512, activation='relu', name='mlp_dense1')(embedded_sequences)
-        x = Dropout(0.2)(x)
-        x = Flatten()(x)
-        x = Dense(256, activation='relu', name='mlp_dense2')(x)
-        x = Dropout(0.2)(x)
-        x = Dense(128, activation='relu', name='mlp_dense3')(x)
-        x = Dropout(0.2)(x)
-        x = Dense(8, activation='relu', name='output')(x)
-        predictions = Dense(8, activation='softmax')(x)
-
-        model = Model(sequence_input, predictions)
+        model = Sequential()
+        model.add(Dense(512, activation='relu', input_shape=(self.max_sequence_length,)))
+        model.add(Dropout(0.2))
+        model.add(Dense(256, activation='relu'))
+        model.add(Dropout(0.2))
+        model.add(Dense(128, activation='relu'))
+        model.add(Dropout(0.2))
+        model.add(Dense(8, activation='softmax'))
         model.compile(loss='categorical_crossentropy',
                       optimizer='adam',
-                      metrics=['acc', keras_metrics.f1_score()])
+                      metrics=['accuracy', f1])
         return model
 
     def train(self):
@@ -164,12 +153,15 @@ class NassAIWord2Vec:
 
         self.num_words = min(self.max_num_words, len(word_index)) + 1
         self.embedding_matrix = numpy.zeros((self.num_words, self.embedding_dim))
-        for word, i in word_index.items():
-            if i > self.max_num_words:
+        all_words = set(w for words in texts for w in words)
+        print(all_words)
+        for word in all_words:
+            index = word_index.get(word)
+            if index > self.max_num_words:
                 continue
             embedding_vector = embeddings_index.get(word)
             if embedding_vector is not None:
-                self.embedding_matrix[i] = embedding_vector
+                    self.embedding_matrix[index] = embedding_vector
 
         self.result["model"] = self.clf
 

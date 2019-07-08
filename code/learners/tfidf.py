@@ -1,57 +1,22 @@
-from collections import defaultdict
 from datetime import datetime
 
 import keras_metrics
-import numpy
 import pandas
-from keras import Input, Model, Sequential
-from keras.layers import Embedding, Dense, Dropout, Activation, Conv1D, GlobalMaxPooling1D, LSTM, Bidirectional
-from keras.wrappers.scikit_learn import KerasClassifier
+from tensorflow.python.keras import Sequential
+from tensorflow.python.keras.layers import Embedding, Dense, Dropout, Conv1D, GlobalMaxPooling1D, LSTM, Bidirectional
+from tensorflow.python.keras.optimizers import Adam
+from tensorflow.python.keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split, cross_validate, ShuffleSplit, KFold
+from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC, SVC
 from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
-from keras.preprocessing.text import Tokenizer
 
-from code.utils import log_results, save_model, get_path, encode_label
-
-
-class TfidfEmbeddingVectorizer(object):
-    def __init__(self, word2vec, glove):
-        self.word2vec = word2vec
-        self.glove = glove
-        self.word2weight = None
-        if len(word2vec) > 0:
-            self.dim = len(word2vec[next(iter(glove))])
-        else:
-            self.dim = 0
-
-    def fit(self, X, y):
-        tfidf = TfidfVectorizer(analyzer=lambda x: x)
-        tfidf.fit(X)
-        # if a word was never seen - it must be at least as infrequent
-        # as any of the known words - so the default idf is the max of
-        # known idf's
-        max_idf = max(tfidf.idf_)
-        self.word2weight = defaultdict(
-            lambda: max_idf,
-            [(w, tfidf.idf_[i]) for w, i in tfidf.vocabulary_.items()])
-
-        return self
-
-    def transform(self, X):
-        import numpy
-        return numpy.array([
-            numpy.mean([self.word2vec[w] * self.word2weight[w]
-                        for w in words if w in self.word2vec] or
-                       [numpy.zeros(self.dim)], axis=0)
-            for words in X
-        ])
+from code.utils import log_results, save_model, get_path, f1
 
 
 class NassAITfidf:
@@ -87,7 +52,22 @@ class NassAITfidf:
         model.add(Dense(8, activation='softmax'))
         model.compile(loss='categorical_crossentropy',
                       optimizer='adam',
-                      metrics=['accuracy', keras_metrics.f1_score()])
+                      metrics=['accuracy', f1])
+        return model
+
+    def build_model(self):
+        model = Sequential()
+        model.add(Dense(units=500,
+                        activation='relu', input_shape=(733,)))
+        model.add(Dense(256, activation='relu'))
+        model.add(Dropout(0.2))
+        model.add(Dense(128, activation='relu'))
+        model.add(Dropout(0.2))
+        model.add(Dense(8, activation='softmax'))
+        model.compile(
+            optimizer=Adam(0.2),
+            loss='categorical_crossentropy',
+            metrics=['accuracy', f1])
         return model
 
     def cnn_model(self):
