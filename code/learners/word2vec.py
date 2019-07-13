@@ -7,28 +7,28 @@ from tensorflow.python.keras.initializers import Constant
 from tensorflow.python.keras.layers import Embedding, Dense, Bidirectional, Conv1D, MaxPooling1D, GlobalMaxPooling1D, LSTM, Dropout
 from tensorflow.python.keras.preprocessing.text import Tokenizer
 from tensorflow.python.keras.preprocessing.sequence import pad_sequences
-from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, cross_validate, ShuffleSplit
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
 
-from code.utils import get_path, encode_label, f1
-from code.utils import MeanEmbeddingVectorizer, log_results
+from code.utils import get_path, encode_label, f1, show_report, evaluate_and_log, evaluate_and_log
+from code.utils import MeanEmbeddingVectorizer
 
 
 class NassAIWord2Vec:
     def __init__(self, clf, data, **kwargs):
+        print(kwargs)
         self.clf = clf
         self.epoch_count = kwargs.get('epoch', 10)
         self.batch = kwargs.get('batch', 10)
         self.cv = kwargs.get('cv', 5)
         self.cbow = kwargs.get('cbow', 1)
-        self.use_glove = 1
+        self.use_glove = kwargs.get('use_glove', 1)
         self.data = pandas.read_csv(data)
         self.glove_path = get_path('models/glove/glove.6B.300d.txt')
-        self.nass_embedding_path = get_path('mdoels/word2vec/nassai_word2vec.vec')
+        self.nass_embedding_path = get_path('models/word2vec/nassai_word2vec.vec')
         self.encoding = "utf-8"
         self.word2vecmodel = None
         self.max_sequence_length = 1000
@@ -38,24 +38,6 @@ class NassAIWord2Vec:
         self.num_words = None
         self.embedding_matrix = None
         self.result = {"type": "word2vec"}
-
-    def show_report(self, y_test, y_pred):
-        print(metrics.classification_report(y_test, y_pred, target_names=self.data['bill_class'].unique()))
-        print()
-        accuracy = metrics.accuracy_score(y_test, y_pred)
-        f1 = metrics.f1_score(y_test, y_pred, average='micro')
-        self.result["accuracy"] = str(accuracy)
-        self.result["f1"] = f1
-        print("Average Accuracy : {}".format(accuracy))
-        print("Average F1 : {}".format(f1))
-
-    def evaluate_and_report(self, model, test_data, y_test):
-        scores = model.evaluate(test_data, y_test, batch_size=200)
-        accuracy = 100 * scores[1]
-        f1 = 100 * scores[2]
-        self.result["accuracy"] = accuracy
-        self.result["f1"] = f1
-        return True
 
     def bilstm_model(self):
         embedding_layer = Embedding(self.num_words,
@@ -134,9 +116,9 @@ class NassAIWord2Vec:
                     embeddings_index[word] = coefs
 
         else:
-            print("Building word2vec embedding")
-            model = Word2Vec(texts, size=self.embedding_dim, window=5, min_count=5, workers=2, hs=1, sg=self.cbow, negative=5, alpha=0.065, min_alpha=0.065)
-            embeddings_index = dict(zip(model.wv.index2word, model.wv.syn0))
+            print("Loading word2vec embedding")
+            model = Word2Vec.load(self.nass_embedding_path)
+            embeddings_index = dict(zip(model.wv.index2word, model.wv.vectors))
 
         print('Found %s word vectors.' % len(embeddings_index))
         print('Processing text dataset')
@@ -154,7 +136,6 @@ class NassAIWord2Vec:
         self.num_words = min(self.max_num_words, len(word_index)) + 1
         self.embedding_matrix = numpy.zeros((self.num_words, self.embedding_dim))
         all_words = set(w for words in texts for w in words)
-        print(all_words)
         for word in all_words:
             index = word_index.get(word)
             if index > self.max_num_words:
@@ -178,12 +159,11 @@ class NassAIWord2Vec:
                       epochs=self.epoch_count,
                       validation_split=0.2)
 
-            self.evaluate_and_report(model, test_data, y_test)
-            return log_results(self.result)
+            return evaluate_and_log(model, test_data, y_test, self.result)
 
         else:
             train_data, test_data, y_train, y_test = train_test_split(texts, labels, test_size=0.2, random_state=42)
-            pipelist = [("word2vec vectorizer", MeanEmbeddingVectorizer(embeddings_index))]
+            pipelist = [("word2vec vectorizer", MeanEmbeddingVectorizer(embeddings_index, self.embedding_dim))]
 
             clf_map = {"mlp_sk": ("mlp_sk", MLPClassifier(alpha=1, max_iter=1000, hidden_layer_sizes=(512, 256, 128), activation='relu')),
                        "logreg": ("logreg", LogisticRegression()), "svm": ("SVC", LinearSVC())}
@@ -196,8 +176,7 @@ class NassAIWord2Vec:
             print("Scoring ...")
             self.run_validation(pipeline, train_data, test_data)
             y_pred = pipeline.predict(test_data)
-            self.show_report(y_test, y_pred)
-            return log_results(self.result)
+            show_report(y_test, y_pred, self.data['bill_class'].unique(), self.result)
 
     def run_validation(self, clf, train, y_train):
         scoring = {'acc': 'accuracy', 'f1_micro': 'f1_micro'}

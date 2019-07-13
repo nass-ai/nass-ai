@@ -1,10 +1,14 @@
 import csv
 import os
+from collections import defaultdict
 
 import numpy
 from gensim.models.doc2vec import TaggedDocument
 from pathlib import Path
+
+from sklearn import metrics
 from sklearn.externals import joblib
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import LabelEncoder
 from tensorflow.python.keras.utils import np_utils
 from tensorflow.python.keras.models import load_model as get_model
@@ -29,13 +33,32 @@ def handle_format(text_list, train=True):
     return output
 
 
+def show_report(y_test, y_pred, classes, result):
+    print(metrics.classification_report(y_test, y_pred, target_names=classes))
+    print()
+    accuracy = metrics.accuracy_score(y_test, y_pred)
+    f1 = metrics.f1_score(y_test, y_pred, average='micro')
+    result["accuracy"] = str(accuracy)
+    result["f1"] = f1
+    print("Average Accuracy : {}".format(accuracy))
+    print("Average F1 : {}".format(f1))
+    return log_results(result)
+
+
+def evaluate_and_log(model, test_data, y_test, result):
+    scores = model.evaluate(test_data, y_test, batch_size=200)
+    accuracy = 100 * scores[1]
+    f1 = 100 * scores[2]
+    result["accuracy"] = accuracy
+    result["f1"] = f1
+    print(accuracy, f1)
+    # return log_results(result)
+
+
 class MeanEmbeddingVectorizer(object):
-    def __init__(self, word2vec):
+    def __init__(self, word2vec, dim):
         self.word2vec = word2vec
-        if len(word2vec) > 0:
-            self.dim = len(next(iter(self.word2vec.values())))
-        else:
-            self.dim = 0
+        self.dim = dim
 
     def fit(self, X, y):
         return self
@@ -44,6 +67,34 @@ class MeanEmbeddingVectorizer(object):
         return numpy.array([
             numpy.mean([self.word2vec[w] for w in words if w in self.word2vec]
                        or [numpy.zeros(self.dim)], axis=0)
+            for words in X
+        ])
+
+
+class TfidfEmbeddingVectorizer(object):
+    def __init__(self, word2vec, dim):
+        self.word2vec = word2vec
+        self.word2weight = None
+        self.dim = dim
+
+    def fit(self, X, y):
+        tfidf = TfidfVectorizer(analyzer=lambda x: x)
+        tfidf.fit(X)
+        # if a word was never seen - it must be at least as infrequent
+        # as any of the known words - so the default idf is the max of
+        # known idf's
+        max_idf = max(tfidf.idf_)
+        self.word2weight = defaultdict(
+            lambda: max_idf,
+            [(w, tfidf.idf_[i]) for w, i in tfidf.vocabulary_.items()])
+
+        return self
+
+    def transform(self, X):
+        return numpy.array([
+            numpy.mean([self.word2vec[w] * self.word2weight[w]
+                     for w in words if w in self.word2vec] or
+                    [numpy.zeros(self.dim)], axis=0)
             for words in X
         ])
 
