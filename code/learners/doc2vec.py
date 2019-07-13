@@ -1,20 +1,24 @@
+from pathlib import Path
+
 import numpy
 import pandas
 from gensim.models import Doc2Vec
+from gensim.models.doc2vec import TaggedDocument
+from nltk import word_tokenize
+from tensorflow.python.keras.layers import Bidirectional
 from tensorflow.python.keras import Input, Model
 from tensorflow.python.keras.initializers import Constant
 from tensorflow.python.keras.layers import Embedding, Flatten, Dense, Dropout, LSTM, GlobalMaxPooling1D, Conv1D, MaxPooling1D
 from tensorflow.python.keras.preprocessing.text import Tokenizer
 from tensorflow.python.keras.preprocessing.sequence import pad_sequences
-from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, cross_validate, ShuffleSplit
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
 
-from code.utils import get_path, encode_label, get_vectors, f1
-from code.utils import MeanEmbeddingVectorizer, handle_format
+from code.utils import get_path, encode_label, get_vectors, f1, evaluate_and_log, show_report
+from code.utils import MeanEmbeddingVectorizer
 
 
 class NassAIDoc2Vec:
@@ -26,25 +30,14 @@ class NassAIDoc2Vec:
         self.dbow = kwargs.get('dbow', 1)
         self.use_glove = kwargs.get('use_glove', True)
         self.data = pandas.read_csv(data)
-        self.nass_embedding_path = get_path('mdoels/word2vec/nassai_doc2vec.vec')
-        self.max_sequence_length = 1000
-        self.max_num_words = 20000
+        self.nass_embedding_path = get_path('models/doc2vec/nassai_dbow_doc2vec.vec') if self.dbow else get_path('models/doc2vec/nassai_dm_doc2vec.vec')
+        self.max_sequence_length = 300
+        self.max_num_words = 50000
         self.embedding_dim = 300
         self.validation_split = 0.2
         self.num_words = None
         self.embedding_matrix = None
-
-    def show_report(self, y_test, y_pred):
-        print(metrics.classification_report(y_test, y_pred, target_names=self.data['bill_class'].unique()))
-        print()
-        print("Average Accuracy : {}".format(metrics.accuracy_score(y_test, y_pred)))
-        print("Average F1 : {}".format(metrics.f1_score(y_test, y_pred, average='micro')))
-
-    def evaluate_and_report(self, model, test_data, y_test):
-        scores = model.evaluate(test_data, y_test, batch_size=200)
-        print("Test Accuracy: %.2f%%" % (100 * scores[1]))
-        print("Test F1: %.2f%%" % (100 * scores[2]))
-        return True
+        self.result = {"type": "word2vec"}
 
     def cnn_model(self):
         print('Building Model')
@@ -56,13 +49,13 @@ class NassAIDoc2Vec:
 
         sequence_input = Input(shape=(self.max_sequence_length,), dtype='int32')
         embedded_sequences = embedding_layer(sequence_input)
-        x = Conv1D(128, 5, activation='relu', name='conv1D_1')(embedded_sequences)
+        x = Conv1D(128, 5, activation='relu')(embedded_sequences)
         x = MaxPooling1D(5)(x)
-        x = Conv1D(128, 5, activation='relu', name='conv1D_2')(x)
+        x = Conv1D(128, 5, activation='relu')(x)
         x = MaxPooling1D(5)(x)
-        x = Conv1D(128, 5, activation='relu', name='conv1D_3')(x)
+        x = Conv1D(128, 5, activation='relu')(x)
         x = GlobalMaxPooling1D()(x)
-        x = Dense(128, activation='relu', name='output')(x)
+        x = Dense(128, activation='relu')(x)
         predictions = Dense(8, activation='softmax')(x)
 
         model = Model(sequence_input, predictions)
@@ -80,17 +73,18 @@ class NassAIDoc2Vec:
 
         sequence_input = Input(shape=(self.max_sequence_length,), dtype='int32')
         embedded_sequences = embedding_layer(sequence_input)
-        x = LSTM(128, dropout=0.2, recurrent_dropout=0.2)(embedded_sequences)
+        x = Bidirectional(LSTM(128, dropout=0.2, recurrent_dropout=0.2))(embedded_sequences)
         x = Dropout(0.2)(x)
-        x = Dense(256, name='Dense_1', activation='relu')(x)
+        x = Dense(256, activation='relu')(x)
         x = Dropout(0.2)(x)
-        x = Dense(128, name='Dense_2', activation='relu')(x)
+        x = Dense(128, activation='relu')(x)
         x = Dropout(0.2)(x)
-        predictions = Dense(8, name='output', activation='softmax')(x)
+        predictions = Dense(8, activation='softmax')(x)
         model = Model(sequence_input, predictions)
         model.compile(loss='categorical_crossentropy',
                       optimizer='adam',
                       metrics=['acc', f1])
+        model._name = 'bi_model'
         return model
 
     def mlp_model(self):
@@ -101,14 +95,14 @@ class NassAIDoc2Vec:
                                     trainable=False)
         sequence_input = Input(shape=(self.max_sequence_length,), dtype='int32')
         embedded_sequences = embedding_layer(sequence_input)
-        x = Dense(512, activation='relu', name='mlp_dense1')(embedded_sequences)
+        x = Dense(512, activation='relu')(embedded_sequences)
         x = Dropout(0.2)(x)
         x = Flatten()(x)
-        x = Dense(256, activation='relu', name='mlp_dense2')(x)
+        x = Dense(256, activation='relu')(x)
         x = Dropout(0.2)(x)
-        x = Dense(128, activation='relu', name='mlp_dense3')(x)
+        x = Dense(128, activation='relu')(x)
         x = Dropout(0.2)(x)
-        x = Dense(8, activation='relu', name='output')(x)
+        x = Dense(8, activation='relu')(x)
         predictions = Dense(8, activation='softmax')(x)
 
         model = Model(sequence_input, predictions)
@@ -124,18 +118,37 @@ class NassAIDoc2Vec:
         print('Found %s texts.' % len(texts))
         labels = self.data.bill_class
 
-        print("Building word2vec embedding")
+        embeddings_index = {}
 
-        train, test = train_test_split(texts, random_state=42, test_size=0.2)
+        if not Path(self.nass_embedding_path).is_file():
+            tagged = [TaggedDocument(words=word_tokenize(_d.lower()),
+                                     tags=[str(i)]) for i, _d in enumerate(texts)]
+            model = Doc2Vec(vector_size=100,
+                            window=5,
+                            alpha=.025,
+                            min_alpha=0.00025,
+                            min_count=2,
+                            dm=1,
+                            workers=8)
+            model.build_vocab(tagged)
+            print("Building Model")
+            epochs = range(10)
+            for epoch in epochs:
+                print(f'Epoch {epoch+1}')
+                model.train(tagged,
+                            total_examples=model.corpus_count,
+                            epochs=model.epochs)
+                # decrease the learning rate
+                model.alpha -= 0.00025
+                # fix the learning rate, no decay
+                model.min_alpha = model.alpha
+        else:
 
-        print("Tagging docs ...")
-        train_formatted = handle_format(train)
-        test_formatted = handle_format(test, False)
-        print("Tagging Done ...")
-        model_data = train_formatted + test_formatted
-        print("Initializing {0} model".format("DBOW" if self.dbow else "DM"))
-        model = Doc2Vec(model_data, dm=self.dbow, vector_size=self.embedding_dim, negative=5, min_count=1, alpha=0.065, min_alpha=0.065)
-        embeddings_index = dict(zip(model.wv.index2word, model.wv.syn0))
+            print("Model Exists. Loading")
+            model = Doc2Vec.load(self.nass_embedding_path)
+        tags = model.docvecs.index2entity
+        for tag in tags:
+                embeddings_index[tag] = model.docvecs[tag]
 
         print('Found %s word vectors.' % len(embeddings_index))
         print('Processing text dataset')
@@ -160,29 +173,30 @@ class NassAIDoc2Vec:
                 self.embedding_matrix[i] = embedding_vector
 
         if self.clf in ["cnn", "bilstm", "mlp"]:
+            self.result["model"] = self.clf
             labels = encode_label(labels)
 
             train_data, test_data, y_train, y_test = train_test_split(data, labels, test_size=0.2, random_state=42)
 
-            # train_vectors = get_vectors(model, train_data)
-            # test_vectors = get_vectors(model, test_data, 'test')
+            train_vectors = get_vectors(model, train_data)
+            test_vectors = get_vectors(model, test_data, 'test')
 
             clf_map = {"cnn": self.cnn_model(), "bilstm": self.bilstm_model(), "mlp": self.mlp_model()}
 
             clf_model = clf_map.get(self.clf)
 
-            clf_model.fit(train_data, y_train,
+            clf_model.fit(train_vectors, y_train,
                           batch_size=self.batch,
                           epochs=self.epoch_count,
                           validation_split=0.2)
 
-            return self.evaluate_and_report(clf_model, test_data, y_test)
+            return evaluate_and_log(clf_model, test_vectors, y_test, self.result)
 
         elif self.clf in ["svm", "mlp_sk", "mnb", 'logreg']:
             train_data, test_data, y_train, y_test = train_test_split(texts, labels, test_size=0.2, random_state=42)
             train_vectors = get_vectors(model, train_data)
             test_vectors = get_vectors(model, test_data, 'test')
-            pipelist = [("word2vec vectorizer", MeanEmbeddingVectorizer(embeddings_index))]
+            pipelist = [("word2vec vectorizer", MeanEmbeddingVectorizer(embeddings_index, self.embedding_dim))]
 
             clf_map = {"mlp_sk": ("mlp_sk", MLPClassifier(alpha=1, max_iter=1000, hidden_layer_sizes=(512, 256, 128), activation='relu')),
                        "logreg": ("logreg", LogisticRegression()), "svm": ("SVC", LinearSVC())}
@@ -194,7 +208,7 @@ class NassAIDoc2Vec:
             print()
             print("Scoring ...")
             y_pred = pipeline.predict(test_vectors)
-            return self.show_report(y_test, y_pred)
+            return show_report(y_test, y_pred, self.data['bill_class'].unique())
 
     def run_validation(self, clf, train, y_train):
         scoring = {'acc': 'accuracy', 'f1_micro': 'f1_micro'}

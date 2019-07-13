@@ -159,6 +159,10 @@ class NassAIWord2Vec:
                       epochs=self.epoch_count,
                       validation_split=0.2)
 
+            y_pred = model.predict(test_data)
+
+            numpy.savez_compressed('test_and_pred', test=test_data, predictions=y_pred)
+
             return evaluate_and_log(model, test_data, y_test, self.result)
 
         else:

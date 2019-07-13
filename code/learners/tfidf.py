@@ -8,7 +8,7 @@ from tensorflow.python.keras.optimizers import Adam
 from tensorflow.python.keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC, SVC
@@ -27,6 +27,7 @@ class NassAITfidf:
         self.dbow = kwargs.get('dbow', 1)
         self.data = pandas.read_csv(data)
         self.result = {"type": "tfidf", "date": str(datetime.now())}
+        self.param_dict = {}
 
         print(self.clf)
 
@@ -108,16 +109,20 @@ class NassAITfidf:
         self.result["model"] = self.clf
         pipelist = [("vectorizer", TfidfVectorizer(min_df=0.2)), ('tfidf', TfidfTransformer(use_idf=True))]
         if self.clf in ["svm", "mlp_sklearn", "mnb", "logreg", 'random_forest', 'svm_linear']:
+            sklearn = True
+            # self.param_dict = {'SVC__C': [1, 10, 100, 1000], 'SVC__kernel': ['linear', 'rbf'], 'SVC__gamma': [0.001, 0.0001]}
+
             sklearn_clf_map = {"mlp_sklearn": ("mlp_sklearn", MLPClassifier(alpha=1, max_iter=1000, hidden_layer_sizes=(512, 256, 128), activation='relu')),
                                "logreg": ("logreg", LogisticRegression()),
                                "svm_linear": ("Linear_SVC", LinearSVC()),
-                               "svm": ("SVC", SVC()),
+                               "svm": ("SVC", SVC(C=10, kernel='linear', gamma=0.001)),
                                "random_forest": ("Random_Forest", RandomForestClassifier(n_estimators=100, max_depth=2, random_state=0)),
                                "mnb": ("mnb", MultinomialNB())}
 
             clf = sklearn_clf_map.get(self.clf)
             save_path = 'models/tfidf_{0}.pkl'.format(self.clf)
         else:
+            sklearn = False
             keras_clf_map = {"cnn": ("cnn", KerasClassifier(build_fn=self.cnn_model, epochs=self.epoch_count, batch_size=self.batch, verbose=1, validation_split=0.2)),
                              "bilstm": ("bilstm", KerasClassifier(build_fn=self.bilstm_model, epochs=self.epoch_count, batch_size=self.batch, verbose=1, validation_split=0.2)),
                              "mlp": ("mlp", KerasClassifier(build_fn=self.mlp_model, epochs=self.epoch_count, batch_size=self.batch, verbose=1, validation_split=0.2))
@@ -126,7 +131,17 @@ class NassAITfidf:
             save_path = 'models/tfidf_{0}.hd5'.format(self.clf)
         pipelist.append(clf)
         print(pipelist)
+
         pipeline = Pipeline(pipelist)
+
+            # clf = GridSearchCV(estimator=pipeline, param_grid=self.param_dict, n_jobs=-1, scoring={'f1'})
+            # clf.fit(train_data, y_train)
+
+            # print('Best score for data1:', clf.best_score_)
+
+            # View the best parameters for the model found using grid search
+            # print('Best C:', clf.best_params_)
+
         pipeline.fit(train_data, y_train)
         print()
         print("Scoring ...")
@@ -134,7 +149,7 @@ class NassAITfidf:
         self.show_report(y_test, y_pred)
         log_results(self.result)
         model_file = get_path(save_path)
-        save_model(pipeline, model_file, True)
+        save_model(pipeline, model_file, sklearn=sklearn)
 
     def evaluate_and_report(self, model, test_data, y_test):
         scores = model.evaluate(test_data, y_test, batch_size=200)
