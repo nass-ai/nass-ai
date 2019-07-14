@@ -10,9 +10,11 @@ from sklearn import metrics
 from sklearn.externals import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import LabelEncoder
-from tensorflow.python.keras.utils import np_utils
-from tensorflow.python.keras.models import load_model as get_model
-from tensorflow.python.keras import backend as K
+from keras.utils import np_utils
+from keras.models import load_model as get_model
+from keras import backend as K
+from joblib import Memory
+
 
 VECTOR_SIZE = 300
 TEST_SIZE = 0.2
@@ -33,16 +35,14 @@ def handle_format(text_list, train=True):
     return output
 
 
-def show_report(y_test, y_pred, classes, result):
+def show_report(y_test, y_pred, classes):
     print(metrics.classification_report(y_test, y_pred, target_names=classes))
     print()
     accuracy = metrics.accuracy_score(y_test, y_pred)
-    f1 = metrics.f1_score(y_test, y_pred, average='micro')
-    result["accuracy"] = str(accuracy)
-    result["f1"] = f1
+    f1 = metrics.f1_score(y_test, y_pred, average='macro')
     print("Average Accuracy : {}".format(accuracy))
     print("Average F1 : {}".format(f1))
-    return log_results(result)
+    return f1
 
 
 def evaluate_and_log(model, test_data, y_test, result):
@@ -52,7 +52,6 @@ def evaluate_and_log(model, test_data, y_test, result):
     result["accuracy"] = accuracy
     result["f1"] = f1
     print(accuracy, f1)
-    # return log_results(result)
 
 
 class MeanEmbeddingVectorizer(object):
@@ -175,4 +174,32 @@ def f1(y_true, y_pred):
     precision = precision(y_true, y_pred)
     recall = recall(y_true, y_pred)
     return 2*((precision*recall)/(precision+recall+K.epsilon()))
+
+
+cache = Memory('cache').cache
+
+
+@cache
+def get_embedding_dim(embedding_path):
+    with open(embedding_path, 'rb') as f:
+        return len(f.readline().split()) - 1
+
+
+@cache
+def get_embedding_matrix(vocab, embedding_path):
+    word2ind = {w: i for i, w in enumerate(vocab)}
+    embedding_dim = get_embedding_dim(embedding_path)
+    embeddings = numpy.random.normal(size=(len(vocab), embedding_dim))
+
+    with open(embedding_path, 'rb') as f:
+        for line in f:
+            parts = line.split()
+            word = parts[0]
+            if word in word2ind:
+                i = word2ind[word]
+                vec = np.array([float(x) for x in parts[1:]])
+                embeddings[i] = vec
+    return embeddings
+
+
 

@@ -5,12 +5,12 @@ import pandas
 from gensim.models import Doc2Vec
 from gensim.models.doc2vec import TaggedDocument
 from nltk import word_tokenize
-from tensorflow.python.keras.layers import Bidirectional
-from tensorflow.python.keras import Input, Model
-from tensorflow.python.keras.initializers import Constant
-from tensorflow.python.keras.layers import Embedding, Flatten, Dense, Dropout, LSTM, GlobalMaxPooling1D, Conv1D, MaxPooling1D
-from tensorflow.python.keras.preprocessing.text import Tokenizer
-from tensorflow.python.keras.preprocessing.sequence import pad_sequences
+from keras.layers import Bidirectional
+from keras import Input, Model
+from keras.initializers import Constant
+from keras.layers import Embedding, Flatten, Dense, Dropout, LSTM, GlobalMaxPooling1D, Conv1D, MaxPooling1D
+from keras.preprocessing.text import Tokenizer
+from keras.preprocessing.sequence import pad_sequences
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, cross_validate, ShuffleSplit
 from sklearn.neural_network import MLPClassifier
@@ -208,7 +208,7 @@ class NassAIDoc2Vec:
             print()
             print("Scoring ...")
             y_pred = pipeline.predict(test_vectors)
-            return show_report(y_test, y_pred, self.data['bill_class'].unique())
+            return show_report(y_test, y_pred, self.data['bill_class'].unique(), self.result)
 
     def run_validation(self, clf, train, y_train):
         scoring = {'acc': 'accuracy', 'f1_micro': 'f1_micro'}
