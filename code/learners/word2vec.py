@@ -16,6 +16,9 @@ from sklearn.svm import LinearSVC
 from code.utils import get_path, encode_label, f1, show_report, evaluate_and_log, evaluate_and_log
 from code.utils import MeanEmbeddingVectorizer
 
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 
 class NassAIWord2Vec:
     def __init__(self, clf, data, **kwargs):
