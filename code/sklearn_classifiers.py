@@ -20,8 +20,7 @@ class SklearnClassifierWrapper(object):
         vectorizer = vectorizer_class(
             preprocessor=lambda x: prep(x),
             tokenizer=lambda x: x,
-            min_df=0.2,
-            ngram_range=(1, ngram_n))
+            ngram_range=(1, 2))
 
         self.clf = Pipeline([('vectorizer', vectorizer), ('tfidf', TfidfTransformer(use_idf=True)), ('model', model)])
         print(self.clf.steps)
