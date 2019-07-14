@@ -14,6 +14,7 @@ def run_validation(clf, train, y_train):
     print()
     cv = ShuffleSplit(n_splits=5, test_size=0.2, random_state=42)
     accuracies = cross_validate(clf, train, y_train, scoring='f1_macro', cv=cv)
+    print(accuracies)
     return True
 
 
