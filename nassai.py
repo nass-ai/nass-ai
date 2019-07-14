@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import click
 
 import pandas
@@ -24,7 +26,7 @@ def nassai_cli(action, cbow, batch, epoch, clf, dbow, mode, text, use_glove=1):
     clean_data_path = get_path('data') + "/clean_data.csv"
     results_path = get_path('data') + 'results.csv'
     records = []
-    sklearn_list = [("mnb", MultNB(ngam_n=3)), ("bnb", BernNB(ngram_n=3)), ("svm", (SVM(ngram_n=3))), ("linear_svm", LinearSVM(ngram_n=3))]
+    sklearn_list = [("bnb", BernNB()), ("svm", (SVM())), ("linear_svm", LinearSVM())]
     if action == "preprocess":
         from code import preprocessing
         return preprocessing.preprocess_data(base_data_path)
@@ -43,6 +45,7 @@ def nassai_cli(action, cbow, batch, epoch, clf, dbow, mode, text, use_glove=1):
                 for model in sklearn_list:
                     score = train_word2vec(clf=model, data=clean_data_path, mode='sklearn', use_glove=use_glove, cbow=cbow, epoch=epoch, batch=batch)
                     records.append({
+                        'date': datetime.now(),
                         'f1': score,
                         'model_name': model[0]
                     })

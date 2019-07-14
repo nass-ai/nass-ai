@@ -1,8 +1,33 @@
+import numpy
+from gensim.models import Word2Vec
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer, TfidfTransformer
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC, LinearSVC
+
+from code.utils import get_path, cache, MeanEmbeddingVectorizer
+
+
+@cache
+def get_glove():
+    print("Loading Glove")
+    embeddings_index = {}
+    glove_path = get_path('models/glove/glove.6B.300d.txt')
+    with open(glove_path) as f:
+        for line in f:
+            word, coefs = line.split(maxsplit=1)
+            coefs = numpy.fromstring(coefs, 'f', sep=' ')
+            embeddings_index[word] = coefs
+        return embeddings_index
+
+
+@cache
+def load_word2vec():
+    print("Loading word2vec embedding")
+    nass_embedding_path = get_path('models/word2vec/nassai_word2vec.vec')
+    model = Word2Vec.load(nass_embedding_path)
+    embeddings_index = dict(zip(model.wv.index2word, model.wv.vectors))
+    return embeddings_index
 
 
 def prep(x):
@@ -10,20 +35,19 @@ def prep(x):
 
 
 class SklearnClassifierWrapper(object):
-    def __init__(self, model, ngram_n=1, name="SklearnClassifierWrapper"):
+    def __init__(self, model, use_glove=True, name="SklearnClassifierWrapper"):
         """
         Classifier made up of a pipeline with a count vectorizer + given model
         :param model: a sklearn-like classifier (with fit, predict and predict_proba)
         :param tfidf: if True wil use TfidfVectorizer, otherwise CountVectorizer; defaults to False
         """
-        vectorizer_class = TfidfVectorizer
-        vectorizer = vectorizer_class(
-            preprocessor=lambda x: prep(x),
-            tokenizer=lambda x: x,
-            ngram_range=(1, 2))
+        self.embedding_index = {}
+        if use_glove:
+            self.embedding_index = get_glove()
+        else:
+            self.embedding_index = load_word2vec()
 
-        self.clf = Pipeline([('vectorizer', vectorizer), ('tfidf', TfidfTransformer(use_idf=True)), ('model', model)])
-        print(self.clf.steps)
+        self.clf = Pipeline([('mean_embedding_vectorizer', MeanEmbeddingVectorizer(self.embedding_index, 300)), ("model", model)])
         self.name = name
 
     def fit(self, X, y):
@@ -43,28 +67,24 @@ class SklearnClassifierWrapper(object):
 class MultNB(SklearnClassifierWrapper):
     def __init__(self, ngram_n=1, **kwargs):
         self.name = "MultinomialNB(ngram_n=%s)" % ngram_n
-        super(MultNB, self).__init__(MultinomialNB(), ngram_n=ngram_n, name=self.name)
+        super(MultNB, self).__init__(MultinomialNB(), name=self.name)
 
 
 class BernNB(SklearnClassifierWrapper):
-    def __init__(self, ngram_n=1, **kwargs):
-        self.name = "BernoulliNB(ngram_n=%s)" % (ngram_n)
-        super(BernNB, self).__init__(BernoulliNB(), ngram_n, self.name)
+    def __init__(self, **kwargs):
+        super(BernNB, self).__init__(BernoulliNB())
 
 
 class SVM(SklearnClassifierWrapper):
-    def __init__(self, ngram_n=1, kernel='linear', probability=False, **kwargs):
-        super(SVM, self).__init__(SVC(kernel=kernel, C=10, gamma=0.0001, probability=probability), ngram_n)
-        self.name = "SVC(ngram_n=%s, kernel=%s)" % (ngram_n, kernel)
+    def __init__(self, kernel='linear', probability=False, **kwargs):
+        super(SVM, self).__init__(SVC(kernel=kernel, C=10, gamma=0.0001, probability=probability))
 
 
 class LinearSVM(SklearnClassifierWrapper):
-    def __init__(self, ngram_n=1, kernel='linear', **kwargs):
-        super(LinearSVM, self).__init__(LinearSVC(C=10), ngram_n)
-        self.name = "SVC(ngram_n=%s, kernel=%s)" % (ngram_n, kernel)
+    def __init__(self, kernel='linear', **kwargs):
+        super(LinearSVM, self).__init__(LinearSVC(C=10))
 
 
 class RandomForest(SklearnClassifierWrapper):
     def __init__(self, ngram_n=1, **kwargs):
-        super(RandomForest, self).__init__(RandomForestClassifier(), ngram_n)
-        self.name = "SVC(ngram_n=%s,)" % ngram_n
+        super(RandomForest, self).__init__(RandomForestClassifier())
