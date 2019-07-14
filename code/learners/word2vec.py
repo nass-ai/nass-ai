@@ -67,9 +67,9 @@ def train_word2vec(clf, data, mode, **kwargs):
             train_data, test_data, y_train, y_test = train_test_split(texts, labels, test_size=0.2, random_state=42)
             pipelist = [("word2vec vectorizer", MeanEmbeddingVectorizer(embeddings_index, embedding_dim)), clf]
             pipeline = Pipeline(pipelist)
-            pipeline.fit(train_data, test_data)
+            pipeline.fit(train_data, y_train)
             print("Scoring ...")
-            run_validation(pipeline, train_data, y_train)
+            #run_validation(pipeline, train_data, y_train)
             y_pred = pipeline.predict(test_data)
             return show_report(y_test, y_pred, data['bill_class'].unique())
 
