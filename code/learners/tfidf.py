@@ -2,13 +2,13 @@ from datetime import datetime
 
 import keras_metrics
 import pandas
-from tensorflow.python.keras import Sequential
-from tensorflow.python.keras.layers import Embedding, Dense, Dropout, Conv1D, GlobalMaxPooling1D, LSTM, Bidirectional
-from tensorflow.python.keras.optimizers import Adam
-from tensorflow.python.keras.wrappers.scikit_learn import KerasClassifier
+from keras import Sequential
+from keras.layers import Embedding, Dense, Dropout, Conv1D, GlobalMaxPooling1D, LSTM, Bidirectional
+from keras.optimizers import Adam
+from keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC, SVC

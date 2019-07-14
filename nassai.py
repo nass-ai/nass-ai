@@ -1,8 +1,11 @@
 import click
+
+import pandas
+from code.sklearn_classifiers import MultNB, BernNB, SVM, LinearSVM
 from code.utils import get_path, load_model
 from code.learners.doc2vec import NassAIDoc2Vec
 from code.learners.tfidf import NassAITfidf
-from code.learners.word2vec import NassAIWord2Vec
+from code.learners.word2vec import train_word2vec
 from code.build import BuildEmbeddingModel
 
 
@@ -13,12 +16,15 @@ from code.build import BuildEmbeddingModel
 @click.option('--cbow', type=click.INT, default=1, help='Uses DBOW if true. DM if false.')
 @click.option('--batch', type=click.INT, default=200, help='Batch for training keras model')
 @click.option('--epoch', type=click.INT, default=200, help='Epoch for training keras model')
-@click.option('--clf', type=click.Choice(['cnn', 'bilstm', 'svm', 'mlp_sklearn', 'mlp', 'random_forest', 'logreg', 'mnb', 'best', 'svm_linear']), help='Algorithm to train data on.')
+@click.option('--clf', type=click.Choice(['sklearn', 'keras']), help='Algorithm to train data on.')
 @click.option('--mode', type=click.Choice(['tfidf', 'doc2vec', 'word2vec']), help='Algorithm to train data on.')
 @click.option('--text', type=click.STRING, help="String to predict for")
 def nassai_cli(action, cbow, batch, epoch, clf, dbow, mode, text, use_glove=1):
     base_data_path = get_path('data') + "/final_with_dates.csv"
     clean_data_path = get_path('data') + "/clean_data.csv"
+    results_path = get_path('data') + 'results.csv'
+    records = []
+    sklearn_list = [("mnb", MultNB(ngam_n=3)), ("bnb", BernNB(ngram_n=3)), ("svm", (SVM(ngram_n=3))), ("linear_svm", LinearSVM(ngram_n=3))]
     if action == "preprocess":
         from code import preprocessing
         return preprocessing.preprocess_data(base_data_path)
@@ -33,8 +39,16 @@ def nassai_cli(action, cbow, batch, epoch, clf, dbow, mode, text, use_glove=1):
             doc2vec = NassAIDoc2Vec(clf=clf, data=clean_data_path, use_glove=use_glove, dbow=dbow, epoch=epoch, batch=batch)
             return doc2vec.train()
         elif mode == "word2vec":
-            word2vec = NassAIWord2Vec(clf=clf, data=clean_data_path, use_glove=use_glove, cbow=cbow, epoch=epoch, batch=batch)
-            return word2vec.train()
+            if clf == "sklearn":
+                for model in sklearn_list:
+                    score = train_word2vec(clf=model, data=clean_data_path, mode='sklearn', use_glove=use_glove, cbow=cbow, epoch=epoch, batch=batch)
+                    records.append({
+                        'f1': score,
+                        'model_name': model[0]
+                    })
+
+                pandas.DataFrame(records).to_csv(results_path, index=False)
+
         else:
             tfidf = NassAITfidf(clf=clf, data=clean_data_path, epoch=epoch)
             return tfidf.train()
