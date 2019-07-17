@@ -7,7 +7,7 @@ from keras.models import Model
 from keras.callbacks import EarlyStopping
 
 from code.sklearn_classifiers import get_glove, load_word2vec
-from code.utils import f1
+from code.utils import f1, batch_generator
 
 
 class KerasTextClassifier(object):
@@ -99,19 +99,6 @@ class KerasTextClassifier(object):
         model = Model(sequence_input, predictions)
         return model
 
-    def batch_generator(self, X, y, batch_size=16):
-        '''
-        Return a random image from X, y
-        '''
-
-        while True:
-            # choose batch_size random images / labels from the data
-            idx = np.random.randint(0, X.shape[0], batch_size)
-            im = X[idx]
-            label = y[idx]
-            npr = np.concatenate(im)
-            yield npr, label
-
     def fit(self, X, y, validation_data=None):
         self.validate_params()
         model = self.build_model()
@@ -129,18 +116,12 @@ class KerasTextClassifier(object):
                 monitor='val_loss', patience=self.patience)
 
             if self.batch:
-                train_gen = self.batch_generator(padded_X, one_hot_y, batch_size=self.batch_size)
-                valid_gen = self.batch_generator(v_X, v_y, batch_size=self.batch_size)
+                train_gen = batch_generator(padded_X, one_hot_y, batch_size=self.batch_size)
+                valid_gen = batch_generator(v_X, v_y, batch_size=self.batch_size)
 
-                self.history = model.fit_generator(
-                    generator=train_gen,
-                    epochs=self.epochs,
-                    validation_data=valid_gen,
-                    steps_per_epoch=padded_X.shape[0] // self.batch_size,
-                    validation_steps=v_X.shape[0] // self.batch_size,
-                    callbacks=[early_stopping])
+                self.history = model.fit_generator(generator=train_gen, epochs=self.epochs, validation_data=valid_gen, steps_per_epoch=padded_X.shape[0] // self.batch_size,
+                                                   validation_steps=v_X.shape[0] // self.batch_size, callbacks=[early_stopping])
             else:
-                print(padded_X.shape, one_hot_y.shape)
                 self.history = model.fit(
                     padded_X, one_hot_y,
                     batch_size=self.batch_size,

@@ -188,10 +188,15 @@ def batch_generator(X, y, batch_size):
     """
 
     while True:
+            npr_b = []
+            y_b = []
             # choose batch_size random images / labels from the data
-            idx = numpy.random.randint(0, X.shape[0], 100)
-            print(idx)
-            im = X[idx]
-            label = y[idx]
-            npr = numpy.concatenate(im)
-            yield npr, label
+            idx = numpy.random.randint(0, X.shape[0], size=1886)
+            for i in idx:
+                npr_b.append(X[i])
+                y_b.append(y[i])
+            # im = X[idx]
+            # label = y[idx]
+            # npr = numpy.concatenate(im)
+            npr = numpy.array(npr_b)
+            label = numpy.array(y)            yield (npr, label)
