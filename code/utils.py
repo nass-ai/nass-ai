@@ -195,8 +195,7 @@ def batch_generator(X, y, batch_size):
             for i in idx:
                 npr_b.append(X[i])
                 y_b.append(y[i])
-            # im = X[idx]
-            # label = y[idx]
-            # npr = numpy.concatenate(im)
             npr = numpy.array(npr_b)
-            label = numpy.array(y)            yield (npr, label)
+            label = numpy.array(y)
+
+            yield (npr, label)

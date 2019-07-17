@@ -64,8 +64,8 @@ def nassai_cli(action, cbow, batch, epoch, using, dbow, mode, text, use_glove=1)
                               ("mlp_tfidfemmbedding", MLP(use_glove=True, use_tfidf=False, tfidf="tfidf_embedding_vectorizer"), 1)]
         else:
             if using != "sklearn":
-                model_list = [("bilstm-cnn", BLSTM2DCNN(train_embeddings=True, batch=False, use_glove=False, units=256)),
-                              ("LSTMClassifier", LSTMClassifier(train_embeddings=True, batch=False, use_glove=False, units=256, layers=4))]
+                model_list = [("bilstm-cnn", BLSTM2DCNN(train_embeddings=True, batch=True, use_glove=False, units=256)),
+                              ("LSTMClassifier", LSTMClassifier(train_embeddings=True, batch=True, use_glove=False, units=256, layers=4))]
             else:
                 model_list = [("bnb", BernNB(use_glove=False, use_tfidf=True)),
                               ("svm", (SVM(use_glove=False, use_tfidf=True))), ("linear_svm", LinearSVM(use_glove=False, use_tfidf=True))]
