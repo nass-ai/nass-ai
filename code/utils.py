@@ -1,11 +1,14 @@
 import csv
 import os
+import pandas
 from collections import defaultdict
 
 import numpy
 from gensim.models.doc2vec import TaggedDocument
 from pathlib import Path
 
+from gensim.utils import simple_preprocess
+from keras.preprocessing.text import Tokenizer
 from sklearn import metrics
 from sklearn.externals import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -19,6 +22,9 @@ from joblib import Memory
 VECTOR_SIZE = 300
 TEST_SIZE = 0.2
 VALIDATION_SIZE = 0.2
+
+
+cache = Memory('cache').cache
 
 
 def get_path(switch):
@@ -176,30 +182,16 @@ def f1(y_true, y_pred):
     return 2*((precision*recall)/(precision+recall+K.epsilon()))
 
 
-cache = Memory('cache').cache
+def batch_generator(X, y, batch_size):
+    """
+    Return a random image from X, y
+    """
 
-
-@cache
-def get_embedding_dim(embedding_path):
-    with open(embedding_path, 'rb') as f:
-        return len(f.readline().split()) - 1
-
-
-@cache
-def get_embedding_matrix(vocab, embedding_path):
-    word2ind = {w: i for i, w in enumerate(vocab)}
-    embedding_dim = get_embedding_dim(embedding_path)
-    embeddings = numpy.random.normal(size=(len(vocab), embedding_dim))
-
-    with open(embedding_path, 'rb') as f:
-        for line in f:
-            parts = line.split()
-            word = parts[0]
-            if word in word2ind:
-                i = word2ind[word]
-                vec = np.array([float(x) for x in parts[1:]])
-                embeddings[i] = vec
-    return embeddings
-
-
-
+    while True:
+            # choose batch_size random images / labels from the data
+            idx = numpy.random.randint(0, X.shape[0], 100)
+            print(idx)
+            im = X[idx]
+            label = y[idx]
+            npr = numpy.concatenate(im)
+            yield npr, label

@@ -1,3 +1,4 @@
+
 import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
@@ -5,6 +6,31 @@ from keras.preprocessing.text import Tokenizer
 from keras.callbacks import EarlyStopping
 
 from code.utils import f1
+
+
+def mlp_model(
+        layers=1,
+        units=256,
+        dropout_rate=0.5):
+    max_seq_len = 692
+
+    model = Sequential()
+    for i in range(layers):
+        if i == 0:
+            model.add(Dense(units, input_shape=(max_seq_len,)))
+        else:
+            model.add(Dense(units))
+        model.add(Activation('relu'))
+        model.add(Dropout(dropout_rate))
+    model.add(Dense(8))
+    model.add(Activation('softmax'))
+    model.compile(loss='categorical_crossentropy',
+                  optimizer='adam',
+                  metrics=['accuracy', f1])
+    return model
+
+
+
 
 
 class MLP(object):
@@ -66,7 +92,7 @@ class MLP(object):
 
         model.compile(loss='categorical_crossentropy',
                       optimizer='adam',
-                      metrics=['accuracy', f1])
+                      metrics=['accuracy'])
 
         if validation_data is not None:
             v_X, v_y = validation_data
