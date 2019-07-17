@@ -119,7 +119,7 @@ class KerasTextClassifier(object):
                 train_gen = batch_generator(padded_X, one_hot_y, batch_size=self.batch_size)
                 valid_gen = batch_generator(v_X, v_y, batch_size=self.batch_size)
 
-                self.history = model.fit_generator(generator=train_gen, epochs=self.epochs, validation_data=valid_gen, steps_per_epoch=padded_X.shape[0] // self.batch_size,
+                self.history = model.fit_generator(generator=train_gen, workers=0, epochs=self.epochs, validation_data=valid_gen, steps_per_epoch=padded_X.shape[0] // self.batch_size,
                                                    validation_steps=v_X.shape[0] // self.batch_size, callbacks=[early_stopping])
             else:
                 self.history = model.fit(
