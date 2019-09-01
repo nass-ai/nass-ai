@@ -3,7 +3,7 @@ from gensim.models import Word2Vec
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer, HashingVectorizer
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
@@ -64,7 +64,7 @@ class SklearnClassifierWrapper(object):
             self.embedding_index = get_glove(vocab=self.vocab)
 
         if self.use_tfidf:
-            vectorizer_class = TfidfVectorizer
+            vectorizer_class = HashingVectorizer
             vectorizer = vectorizer_class(
                 preprocessor=lambda x: map(str, x),
                 tokenizer=lambda x: x)

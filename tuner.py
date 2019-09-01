@@ -25,11 +25,9 @@ def benchmark_with_early_stopping(model_class, model_params=None):
     if model_params is None:
         model_params = {}
 
-    X, y, vocab, label_encoder = prepare_data()
-    class_count = len(label_encoder.classes_)
-    model_params['vocab_size'] = len(vocab)
+    X, y, _, vocab, tok = prepare_data(prep=True, do_decode=False)
     model_params['vocab'] = vocab
-    model_params['class_count'] = class_count
+    model_params['tok'] = tok
     model = model_class(**model_params)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
@@ -76,7 +74,6 @@ def hyperopt_me_like_one_of_your_french_girls(
 
 if __name__ == '__main__':
     pp = pprint.PrettyPrinter(indent=4)
-    DATA_PATH = '../data/polarity.txt'
 
     trials = hyperopt_me_like_one_of_your_french_girls(
         YKimCNN, {
@@ -92,9 +89,9 @@ if __name__ == '__main__':
                 [3, 5, 7],
                 [3, 4, 5, 6]
             ]),
-            'embedding_dim': hp.quniform('embedding_dim', 5, 60, 5),
-            'epochs': 200,
-            'max_seq_len': 50
+            # 'embedding_dim': hp.quniform('embedding_dim', 5, 60, 5),
+            # 'epochs': 200,
+            # 'max_seq_len': 50
         }, max_evals=100)
 
     print('\n\nYKimCNN trainable embedding')
@@ -114,9 +111,9 @@ if __name__ == '__main__':
                 [3, 5, 7],
                 [3, 4, 5, 6]
             ]),
-            'embeddings_path': '../data/glove.6B/glove.6B.100d.txt',
-            'epochs': 200,
-            'max_seq_len': 50
+            # 'embeddings_path': '../data/glove.6B/glove.6B.100d.txt',
+            # 'epochs': 200,
+            # 'max_seq_len': 50
         }, max_evals=100)
 
     print('\n\nYKimCNN glove embedding')
@@ -125,12 +122,12 @@ if __name__ == '__main__':
     trials = hyperopt_me_like_one_of_your_french_girls(
         BLSTM2DCNN, {
             'units': hp.quniform('units', 8, 128, 4),
-            'max_seq_len': 50,
+            # 'max_seq_len': 50,
             'dropout_rate': hp.uniform('dropout_rate', 0., 0.95),
             'rec_dropout_rate': hp.uniform('rec_dropout_rate', 0., 0.95),
-            'epochs': 60,
+            # 'epochs': 60,
             'optimizer': hp.choice('optimizer', ['adam', 'rmsprop']),
-            'embeddings_path': '../data/glove.6B/glove.6B.100d.txt',
+            # 'embeddings_path': '../data/glove.6B/glove.6B.100d.txt',
             'bidirectional': True,
             'batch_size': 64
         }, max_evals=100)
@@ -141,10 +138,10 @@ if __name__ == '__main__':
     trials = hyperopt_me_like_one_of_your_french_girls(
         BLSTM2DCNN, {
             'units': hp.quniform('units', 8, 256, 1),
-            'max_seq_len': 50,
+            # 'max_seq_len': 50,
             'dropout_rate': hp.uniform('dropout_rate', 0., 0.9),
             'rec_dropout_rate': hp.uniform('rec_dropout_rate', 0., 0.9),
-            'epochs': 60,
+            # 'epochs': 60,
             'optimizer': hp.choice('optimizer', ['adam', 'rmsprop']),
             'embedding_dim': hp.quniform('embedding_dim', 2, 40, 1)
         }, max_evals=100)
@@ -157,7 +154,7 @@ if __name__ == '__main__':
             'layers': hp.quniform('layers', 1, 5, 1),
             'units': hp.quniform('units', 8, 2048, 1),
             'dropout_rate': hp.uniform('dropout_rate', 0.01, 0.99),
-            'epochs': 200,
+            # 'epochs': 200,
             'max_vocab_size': hp.quniform('max_vocab_size', 4000, 25000, 1000)
         }, max_evals=200)
 
@@ -168,10 +165,10 @@ if __name__ == '__main__':
         LSTMClassifier, {
             'layers': hp.quniform('layers', 1, 4, 1),
             'units': hp.quniform('units', 8, 256, 1),
-            'max_seq_len': 50,
+            # 'max_seq_len': 50,
             'dropout_rate': hp.uniform('dropout_rate', 0., 0.9),
             'rec_dropout_rate': hp.uniform('rec_dropout_rate', 0., 0.9),
-            'epochs': 60,
+            # 'epochs': 60,
             'optimizer': hp.choice('optimizer', ['adam', 'rmsprop']),
             'embedding_dim': hp.quniform('embedding_dim', 2, 40, 1)
         }, max_evals=100)
@@ -183,10 +180,10 @@ if __name__ == '__main__':
         LSTMClassifier, {
             'layers': hp.quniform('layers', 1, 3, 1),
             'units': hp.quniform('units', 8, 128, 1),
-            'max_seq_len': 50,
+            # 'max_seq_len': 50,
             'dropout_rate': hp.uniform('dropout_rate', 0., 0.95),
             'rec_dropout_rate': hp.uniform('rec_dropout_rate', 0., 0.95),
-            'epochs': 60,
+            # 'epochs': 60,
             'optimizer': hp.choice('optimizer', ['adam', 'rmsprop']),
             'embedding_dim': hp.quniform('embedding_dim', 2, 40, 1),
             'bidirectional': True,
@@ -200,10 +197,10 @@ if __name__ == '__main__':
         LSTMClassifier, {
             'layers': hp.quniform('layers', 1, 3, 1),
             'units': hp.quniform('units', 8, 128, 4),
-            'max_seq_len': 50,
+            # 'max_seq_len': 50,
             'dropout_rate': hp.uniform('dropout_rate', 0., 0.95),
             'rec_dropout_rate': hp.uniform('rec_dropout_rate', 0., 0.95),
-            'epochs': 60,
+            # 'epochs': 60,
             'optimizer': hp.choice('optimizer', ['adam', 'rmsprop']),
             'embeddings_path': '../data/glove.6B/glove.6B.100d.txt',
             'bidirectional': True,
@@ -217,10 +214,10 @@ if __name__ == '__main__':
         LSTMClassifier, {
             'layers': hp.quniform('layers', 1, 3, 1),
             'units': hp.quniform('units', 8, 128, 4),
-            'max_seq_len': 50,
+            # 'max_seq_len': 50,
             'dropout_rate': hp.uniform('dropout_rate', 0., 0.95),
             'rec_dropout_rate': hp.uniform('rec_dropout_rate', 0., 0.95),
-            'epochs': 60,
+            # 'epochs': 60,
             'optimizer': hp.choice('optimizer', ['adam', 'rmsprop']),
             'embeddings_path': '../data/glove.6B/glove.6B.100d.txt',
             'batch_size': 64

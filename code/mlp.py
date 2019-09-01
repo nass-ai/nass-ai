@@ -30,9 +30,6 @@ def mlp_model(
     return model
 
 
-
-
-
 class MLP(object):
 
     def __init__(
@@ -131,3 +128,4 @@ class MLP(object):
                "batch_size=%s)" % (
                    self.layers, self.units, self.dropout_rate, self.max_vocab_size, self.epochs,
                    self.batch_size)
+

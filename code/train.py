@@ -47,8 +47,8 @@ def train(clf, **kwargs):
 
         if clf[0] == "mlp":
             pipe = Pipeline([("vectorizer", TfidfVectorizer(min_df=0.2)), ('tfidf', TfidfTransformer(use_idf=True)), ("model", KerasClassifier(build_fn=model, layers=kwargs.get('layers'),
-                                                                                                                                               dropout_rate=kwargs.get('dropout_rate'), epochs=50))])
-            return fit_and_report(pipe, train_data, test_data, y_train, y_test, unique)
+                                                                                                                                               dropout_rate=kwargs.get('dropout_rate'), epochs=5))])
+            return fit_and_report(pipe, train_data, test_data, y_train, y_test, unique, name=kwargs.get('name'))
 
         else:
             train_data = tok.texts_to_matrix(train_data)
@@ -65,12 +65,12 @@ def train(clf, **kwargs):
 
                 model = model.fit_generator(
                     generator=train_gen,
-                    epochs=50,
+                    epochs=5,
                     validation_data=valid_gen,
                     steps_per_epoch=valid_gen.shape[0] // batch_size,
                     validation_steps=test_padded.shape[0] // batch_size,
                     callbacks=[early_stopping])
-                return fit_and_report(model, train_data, test_data, y_train, y_test, unique)
+                return fit_and_report(model, train_data, test_data, y_train, y_test, unique, kwargs.get('name'))
 
             else:
                 model = model.set_up(vocab)
@@ -78,25 +78,29 @@ def train(clf, **kwargs):
                     train_padded, y_train,
                     validation_data=[test_padded, y_test]
                 )
-                return fit_and_report(model, train_data, test_data, y_train, y_test, unique)
+                return fit_and_report(model, train_data, test_data, y_train, y_test, unique, kwargs.get('name'))
 
     if isinstance(model, MLP):
         texts, labels, unique, vocab, tok = prepare_data(do_decode=True)
         train_data, test_data = train_test_split(texts, test_size=0.2, random_state=42)
         y_train, y_test = train_test_split(labels, test_size=0.2, random_state=42)
         pipe = Pipeline([("vectorizer", TfidfVectorizer(min_df=0.2)), ('tfidf', TfidfTransformer(use_idf=True)), ("model", KerasClassifier(build_fn=model, layers=kwargs.get('layers'),
-                                                                                                                                           dropout_rate=kwargs.get('dropout_rate'), epochs=50))])
-        return fit_and_report(pipe, train_data, test_data, y_train, y_test, unique)
+                                                                                                                                           dropout_rate=kwargs.get('dropout_rate'), epochs=5))])
+        return fit_and_report(pipe, train_data, test_data, y_train, y_test, unique, kwargs.get('name'))
 
     else:
         texts, labels, unique, vocab, tok = prepare_data(prep=True)
         train_data, test_data = train_test_split(texts, test_size=0.2, random_state=42)
         y_train, y_test = train_test_split(labels, test_size=0.2, random_state=42)
         model.set_up(vocab)
-        return fit_and_report(model, train_data, test_data, y_train, y_test, unique)
+        return fit_and_report(model, train_data, test_data, y_train, y_test, unique, name=kwargs.get('name'))
 
 
-def fit_and_report(model, train_data, test_data, y_train, y_test, labels):
+def fit_and_report(model, train_data, test_data, y_train, y_test, labels, name):
     model.fit(train_data, y_train)
     y_pred = model.predict(test_data)
+
+    import numpy
+    numpy.savez_compressed("{}.npz".format(name), test=y_test, predictions=y_pred)
+
     return show_report(y_test, y_pred, labels)

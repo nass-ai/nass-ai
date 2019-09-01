@@ -36,7 +36,7 @@ class KerasTextClassifier(object):
         self.max_seq_len = 1000
         self.embedding_path = embedding_path
         self.optimizer = 'adam'
-        self.epochs = 50
+        self.epochs = 5
         self.batch_size = 100
         self.patience = 3
         self.history = None

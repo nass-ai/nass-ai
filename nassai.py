@@ -64,7 +64,7 @@ def nassai_cli(action, cbow, batch, epoch, using, dbow, mode, text, use_glove=1)
 
                               ]
             else:
-                model_list = [('mlp', mlp_model), ("mlp_mean_embedding", MLP(use_glove=True, use_tfidf=False, tfidf="mean_embedding"), 1),
+                model_list = [('newt', mlp_model), ("mlp_mean_embedding", MLP(use_glove=True, use_tfidf=False, tfidf="mean_embedding"), 1),
                               ("mlp_tfidfemmbedding", MLP(use_glove=True, use_tfidf=False, tfidf="tfidf_embedding_vectorizer"), 1)]
         elif mode == "word2vec":
             if using == "sklearn":
@@ -76,14 +76,14 @@ def nassai_cli(action, cbow, batch, epoch, using, dbow, mode, text, use_glove=1)
                               ("svm_tfidfembedding", (SVM(use_glove=True, use_tfidf=False, tfidf="tfidf_embedding_vectorizer"))),
                               ("linear_svm_tfidfembedding", LinearSVM(use_glove=True, use_tfidf=False, tfidf="tfidf_embedding_vectorizer"))]
             else:
-                model_list = [('mlp', mlp_model), ("mlp_mean_embedding", MLP(use_glove=True, use_tfidf=False, tfidf="mean_embedding"), 1),
+                model_list = [("mlp_mean_embedding", MLP(use_glove=True, use_tfidf=False, tfidf="mean_embedding"), 1),
                               ("mlp_tfidfemmbedding", MLP(use_glove=True, use_tfidf=False, tfidf="tfidf_embedding_vectorizer"), 1)]
         else:
             if using != "sklearn":
-                model_list = [("bilstm-cnn", BLSTM2DCNN(train_embeddings=True, batch=True, use_glove=False, units=256)),
+                model_list = [("bilstm-cnn", FCholletCNN(train_embeddings=True, batch=True, use_glove=False, units=256)),
                               ("LSTMClassifier", LSTMClassifier(train_embeddings=True, batch=True, use_glove=False, units=256, layers=4))]
             else:
-                model_list = [("bnb", BernNB(use_glove=False, use_tfidf=True)),
+                model_list = [("newt", BernNB(use_glove=False, use_tfidf=True)),
                               ("svm", (SVM(use_glove=False, use_tfidf=True))), ("linear_svm", LinearSVM(use_glove=False, use_tfidf=True))]
 
         return run(model_list, mode=mode, using=using, layers=4, dropout_rate=0.25)
@@ -103,7 +103,7 @@ def run(model_list, mode, **kwargs):
     print("TRAINING : {}".format(mode))
     for model in model_list:
         print("Current Model : {}".format(model))
-        score = train(clf=model, data=clean_data_path, **kwargs)
+        score = train(clf=model, data=clean_data_path, name="{}_{}".format(model[0], mode), **kwargs)
         records.update({
             'date': datetime.now(),
             'f1': score,
