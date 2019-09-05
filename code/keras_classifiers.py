@@ -24,8 +24,6 @@ class KerasTextClassifier(object):
             **kwargs):
 
         self.vocab = vocab
-        # if not self.vocab:
-        #     raise ValueError("You need to call set_vocab")
 
         self.train_embeddings = train_embeddings
         self.vocab_size = None
