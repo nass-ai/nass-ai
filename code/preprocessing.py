@@ -4,7 +4,6 @@ import string
 
 import pandas
 import nltk
-from nltk.corpus import stopwords
 from code.utils import get_path
 
 nltk.download('stopwords')
@@ -12,14 +11,9 @@ nltk.download('stopwords')
 
 def clean_text(text):
     text = re.sub(r"[^A-Za-z0-9^,!.\/'+-=]", " ", text)
-    text = text.lower().split() #Lower
-    stops = set(stopwords.words("english"))
-    text = [w for w in text if w not in stops] #Stop
-    text = " ".join(text)
     text = text.translate(str.maketrans("", "", string.punctuation)) #Punctuation
     text = nltk.word_tokenize(text) #Tokenization
-    lemmatizer = nltk.WordNetLemmatizer()
-    text = ' '.join([lemmatizer.lemmatize(w) for w in text]) ##Lem
+    text = " ".join(text)
     text = re.sub(r'\d+', '', text) #Digit
     return text
 
