@@ -64,7 +64,7 @@ class MLP(object):
             'max_vocab_size': max_vocab_size,
             'epochs': epochs,
             'batch_size': batch_size,
-            'vocab_size': vocab_size,
+            'vocab_size': vocab_size,                                                                                                                                                                                                                                                                                                                                            
             'class_count': class_count
         }
 

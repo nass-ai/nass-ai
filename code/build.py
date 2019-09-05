@@ -21,8 +21,9 @@ class BuildEmbeddingModel(object):
         texts = self.data.clean_text
         if self.embedding_type == "word2vec":
             model_data = [word.split(' ') for word in texts]
+            print(len(texts))
             print("Initializing {0} model".format(self.embedding_type))
-            model = Word2Vec(size=self.embedding_dim, window=5, min_count=5, workers=2, hs=1, sg=self.word2vec_mode, negative=5, alpha=0.065, min_alpha=0.065, max_vocab_size=5000)
+            model = Word2Vec(size=self.embedding_dim, window=5, min_count=5, workers=2, hs=1, sg=self.word2vec_mode, negative=5, alpha=0.065, min_alpha=0.065, max_vocab_size=2000)
         else:
             train, test = train_test_split(texts, random_state=42, test_size=0.2)
             print("Initializing {0} model".format(self.embedding_type))
