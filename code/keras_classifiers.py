@@ -57,7 +57,7 @@ class KerasTextClassifier(object):
         if self.train_embeddings:
             self.embedding_matrix = np.random.normal(
                 size=(self.vocab_size, self.embedding_dim))
-            trainable = True
+            trainable = True            
         else:
             if not self.use_glove:
                 self.embedding_matrix = load_word2vec(self.embedding_path)

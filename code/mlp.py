@@ -3,21 +3,20 @@ import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
 from keras.preprocessing.text import Tokenizer
-from keras.callbacks import EarlyStopping
+from keras.callbacks import EarlyStopping,TensorBoard
 
 from code.utils import f1
 
-
 def mlp_model(
-        layers=1,
+        layers=4,
         units=256,
-        dropout_rate=0.5):
-    max_seq_len = 692
+        dropout_rate=0.25):
+    max_seq_len = 789
 
     model = Sequential()
     for i in range(layers):
         if i == 0:
-            model.add(Dense(units, input_shape=(max_seq_len,)))
+            model.add(Dense(units, kernel_regularizer=keras.regularizers.l2(0.001), input_shape=(max_seq_len,)))
         else:
             model.add(Dense(units))
         model.add(Activation('relu'))
@@ -27,6 +26,7 @@ def mlp_model(
     model.compile(loss='categorical_crossentropy',
                   optimizer='adam',
                   metrics=['accuracy', f1])
+    print(model.summary())
     return model
 
 
@@ -51,7 +51,7 @@ class MLP(object):
         self.vocab_size = vocab_size
         self.num_classes = class_count
         self.max_vocab_size = max_vocab_size
-        self.vocab_size = min(vocab_size, max_vocab_size)
+        self.vocab_size = 5000
         self.tokenizer = Tokenizer(num_words=self.vocab_size)
 
         self.model = None
@@ -91,24 +91,26 @@ class MLP(object):
                       optimizer='adam',
                       metrics=['accuracy'])
 
+        early_stopping = EarlyStopping(
+                monitor='loss', patience=self.patience)
+        tensorboard_callback = TensorBoard(log_dir=logdir)
+
         if validation_data is not None:
             v_X, v_y = validation_data
             v_X = self.tokenizer.sequences_to_matrix(v_X, mode='binary')
             v_y = keras.utils.to_categorical(v_y, self.num_classes)
-
-            early_stopping = EarlyStopping(
-                monitor='val_loss', patience=self.patience)
             self.history = model.fit(
                 X, y,
                 batch_size=self.batch_size,
                 epochs=self.epochs,
                 verbose=1,
                 validation_data=[v_X, v_y],
-                callbacks=[early_stopping])
+                callbacks=[early_stopping, tensorboard_callback])
         else:
             self.history = model.fit(X, y,
                                      batch_size=self.batch_size,
                                      epochs=self.epochs,
+                                     callbacks=[early_stopping, tensorboard_callback],
                                      verbose=1)
         self.model = model
         return self

@@ -13,7 +13,7 @@ class BuildEmbeddingModel(object):
         self.data = pandas.read_csv(data)
         self.doc2vec_mode = kwargs.get('doc2vec_mode', 0)
         self.word2vec_mode = kwargs.get('word2vec_mode', 0)
-        self.epoch = kwargs.get('epoch', 10)
+        self.epoch = kwargs.get('epoch', 5)
         self.batch = kwargs.get('batch', 100)
         self.embedding_dim = 300
 
@@ -32,7 +32,7 @@ class BuildEmbeddingModel(object):
             test_formatted = handle_format(test, False)
             print("Tagging Done ...")
             model_data = train_formatted + test_formatted
-            model = Doc2Vec(dm=self.doc2vec_mode, vector_size=self.embedding_dim, negative=5, min_count=1, alpha=0.065, min_alpha=0.065)
+            model = Doc2Vec(dm=self.doc2vec_mode, vector_size=self.embedding_dim, negative=5, min_count=1, alpha=0.065, min_alpha=0.065, max_vocab_size=1500, dbow_words=1)
         print("Building Model")
         model.build_vocab(model_data)
         return self.train_model(model, model_data)

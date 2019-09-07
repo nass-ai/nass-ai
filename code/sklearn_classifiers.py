@@ -1,4 +1,5 @@
 import numpy
+import gensim
 from gensim.models import Word2Vec
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
@@ -10,6 +11,19 @@ from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC, LinearSVC
 
 from code.utils import get_path, cache, MeanEmbeddingVectorizer, TfidfEmbeddingVectorizer, encode_label, f1
+
+@cache
+def get_vectors(vocab):
+    embeddings_matrix = {}
+    print("Loading Glove Embeddings.")
+    model = gensim.models.KeyedVectors.load_word2vec_format('models/glove/glove.6B.300d.w2vformat.txt')
+    print("Glove Loaded. Getting Word Vectors.")
+    words_in_model = list(model.wv.vocab.keys())
+    common = set(vocab) & set(words_in_model)
+    print("Found {} common words".format(len(common)))
+    for word in common:
+       embeddings_matrix[word] = model.wv.word_vec(word)
+    return embeddings_matrix
 
 
 @cache
@@ -61,7 +75,7 @@ class SklearnClassifierWrapper(object):
             self.embedding_index = load_word2vec(self.embedding_path)
 
         elif self.use_glove:
-            self.embedding_index = get_glove(vocab=self.vocab)
+            self.embedding_index = get_vectors(vocab=self.vocab)
 
         if self.use_tfidf:
             vectorizer_class = HashingVectorizer
@@ -124,12 +138,13 @@ class MLP(SklearnClassifierWrapper):
         self.model = self.mlp_model()
         super(MLP, self).__init__(self.model, **kwargs)
 
-    def mlp_model(self,
-                  layers=1,
-                  units=256,
-                  dropout_rate=0.5):
+    def mlp_model(self):
 
-        max_seq_len = 300
+        max_seq_len = 1
+
+        layers=1
+        units=256
+        dropout_rate=0.25
 
         model = Sequential()
         for i in range(layers):
@@ -139,7 +154,7 @@ class MLP(SklearnClassifierWrapper):
                 model.add(Dense(units))
             model.add(Activation('relu'))
             model.add(Dropout(dropout_rate))
-        model.add(Dense(8, name="output_dense"))
+        model.add(Dense(1, name="output_dense"))
         model.add(Activation('softmax'))
         model.compile(loss='categorical_crossentropy',
                       optimizer='adam',

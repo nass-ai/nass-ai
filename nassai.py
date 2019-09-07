@@ -39,27 +39,31 @@ def nassai_cli(action, cbow, batch, epoch, using, dbow, mode, text, use_glove=1)
         if mode == "doc2vec":
             embedding = get_path('models') + '/doc2vec/nassai_dbow_doc2vec.vec'
             if using == "sklearn":
-                model_list = [("bnb_mean_embedding", BernNB(use_glove=False, embedding_path=embedding, use_tfidf=False, tfidf="mean_embedding")),
-                              ("svm_mean_embedding", SVM(use_glove=False, use_tfidf=False, embedding_path=embedding, tfidf="mean_embedding")),
-                              ("linear_svm_mean_embedding", LinearSVM(use_glove=False, use_tfidf=False, embedding_path=embedding, tfidf="mean_embedding")),
+                model_list = [
+                              ("doc2vec_bnb_mean_embedding", BernNB(use_glove=False, embedding_path=embedding, use_tfidf=False, tfidf="mean_embedding")),
+                              ("doc2vec_svm_mean_embedding", SVM(use_glove=False, use_tfidf=False, embedding_path=embedding, tfidf="mean_embedding")),
+                              ("doc2vec_linear_svm_mean_embedding", LinearSVM(use_glove=False, use_tfidf=False, embedding_path=embedding, tfidf="mean_embedding")),
 
-                              ("bnb_tfidfemmbedding", BernNB(use_glove=True, use_tfidf=False, tfidf="tfidf_embedding_vectorizer")),
-                              ("svm_tfidfembedding", (SVM(use_glove=True, use_tfidf=False, tfidf="tfidf_embedding_vectorizer"))),
-                              ("linear_svm_tfidfembedding", LinearSVM(use_glove=True, use_tfidf=False, tfidf="tfidf_embedding_vectorizer"))
+                              ("doc2vec_bnb_tfidfemmbedding", BernNB(use_glove=True, use_tfidf=True, tfidf="tfidf_embedding_vectorizer")),
+                              ("doc2vec_svm_tfidfembedding", (SVM(use_glove=True, use_tfidf=True, tfidf="tfidf_embedding_vectorizer"))),
+                              ("doc2vec_linear_svm_tfidfembedding", LinearSVM(use_glove=True, use_tfidf=True, tfidf="tfidf_embedding_vectorizer"))
 
                               ]
             else:
-                model_list = [('newt', mlp_model), ("mlp_mean_embedding", MLP(use_glove=True, use_tfidf=False, tfidf="mean_embedding"), 1),
-                              ("mlp_tfidfemmbedding", MLP(use_glove=True, use_tfidf=False, tfidf="tfidf_embedding_vectorizer"), 1)]
+                model_list = [
+                            ("LSTMClassifier", LSTMClassifier(train_embeddings=False, batch=True, use_glove=False, units=256, embedding_path=embedding, layers=4))
+                            ("bilstm-cnn", FCholletCNN(train_embeddings=False, batch=True, use_glove=False, units=256, embedding_path=embedding)),
+                              ]
         elif mode == "word2vec":
             if using == "sklearn":
-                model_list = [("bnb_mean_embedding", BernNB(use_glove=True, use_tfidf=False, tfidf="mean_embedding")),
-                              ("svm_mean_embedding", (SVM(use_glove=True, use_tfidf=False, tfidf="mean_embedding"))),
-                              ("linear_svm_mean_embedding", LinearSVM(use_glove=True, use_tfidf=False, tfidf="mean_embedding")),
+                model_list = [
+                            #   ("bnb_mean_embedding", BernNB(use_glove=True, use_tfidf=False, tfidf="mean_embedding")),
+                            #   ("svm_mean_embedding", (SVM(use_glove=True, use_tfidf=False, tfidf="mean_embedding"))),
+                            #   ("linear_svm_mean_embedding", LinearSVM(use_glove=True, use_tfidf=False, tfidf="mean_embedding")),
 
-                              ("bnb_tfidfemmbedding", BernNB(use_glove=True, use_tfidf=False, tfidf="tfidf_embedding_vectorizer")),
-                              ("svm_tfidfembedding", (SVM(use_glove=True, use_tfidf=False, tfidf="tfidf_embedding_vectorizer"))),
-                              ("linear_svm_tfidfembedding", LinearSVM(use_glove=True, use_tfidf=False, tfidf="tfidf_embedding_vectorizer"))]
+                              ("bnb_tfidfemmbedding", BernNB(use_glove=True, use_tfidf=True, tfidf="tfidf_embedding_vectorizer")),
+                              ("svm_tfidfembedding", (SVM(use_glove=True, use_tfidf=True, tfidf="tfidf_embedding_vectorizer"))),
+                              ("linear_svm_tfidfembedding", LinearSVM(use_glove=True, use_tfidf=True, tfidf="tfidf_embedding_vectorizer"))]
             else:
                 model_list = [("mlp_mean_embedding", MLP(use_glove=True, use_tfidf=False, tfidf="mean_embedding"), 1),
                               ("mlp_tfidfemmbedding", MLP(use_glove=True, use_tfidf=False, tfidf="tfidf_embedding_vectorizer"), 1)]
@@ -68,8 +72,9 @@ def nassai_cli(action, cbow, batch, epoch, using, dbow, mode, text, use_glove=1)
                 model_list = [("bilstm-cnn", FCholletCNN(train_embeddings=True, batch=True, use_glove=False, units=256)),
                               ("LSTMClassifier", LSTMClassifier(train_embeddings=True, batch=True, use_glove=False, units=256, layers=4))]
             else:
-                model_list = [("newt", BernNB(use_glove=False, use_tfidf=True)),
-                              ("svm", (SVM(use_glove=False, use_tfidf=True))), ("linear_svm", LinearSVM(use_glove=False, use_tfidf=True))]
+                model_list = [("tfidf_mlp", BernNB(use_glove=False, use_tfidf=True)),
+                              ("tfidf_linear_svm_mean_embedding", LinearSVM(use_glove=False, use_tfidf=True, tfidf="mean_embedding")),
+                              ("tfidf_svm", (SVM(use_glove=False, use_tfidf=True))), ("linear_svm", LinearSVM(use_glove=False, use_tfidf=True))]
 
         return run(model_list, mode=mode, using=using, layers=4, dropout_rate=0.25)
 
