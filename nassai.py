@@ -51,8 +51,10 @@ def nassai_cli(action, cbow, batch, epoch, using, dbow, mode, text, use_glove=1)
                               ]
             else:
                 model_list = [
-                            ("LSTMClassifier", LSTMClassifier(train_embeddings=False, batch=True, use_glove=False, units=256, embedding_path=embedding, layers=4))
-                            ("bilstm-cnn", FCholletCNN(train_embeddings=False, batch=True, use_glove=False, units=256, embedding_path=embedding)),
+                                ("lstm_doc2vec_glove", LSTMClassifier(train_embeddings=False, batch=True, use_glove=True, units=256, embedding_path=embedding, layers=4)),
+                                ("fchollet_cnn_doc2vec_glove", FCholletCNN(train_embeddings=False, batch=True, use_glove=True, units=256, embedding_path=embedding)),
+                                ("bilstm_doc2vec_glove", BLSTM2DCNN(train_embeddings=False, batch=True, use_glove=True, units=256, embedding_path=embedding)),
+                                ("ykimcnn_doc2vec_glove", YKimCNN(train_embeddings=False, batch=True, use_glove=True, units=256, embedding_path=embedding))
                               ]
         elif mode == "word2vec":
             if using == "sklearn":

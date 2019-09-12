@@ -51,7 +51,6 @@ def train(clf, **kwargs):
 
     if not isinstance(model, SklearnClassifierWrapper):
         texts, labels, unique, vocab, tok = prepare_data(do_decode=False)
-        print("Length of Vocab : {}".format(len(vocab)))
         train_data, test_data = train_test_split(texts, test_size=0.2, random_state=42)
         y_train, y_test = train_test_split(labels, test_size=0.2, random_state=42)
 

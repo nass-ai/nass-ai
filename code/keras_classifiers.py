@@ -5,6 +5,7 @@ from keras.layers import Dense, Input, Flatten
 from keras.layers import Embedding
 from keras.models import Model
 from keras.callbacks import EarlyStopping
+from keras.engine import InputLayer
 
 from code.sklearn_classifiers import get_glove, load_word2vec
 from code.utils import f1, batch_generator
@@ -24,7 +25,6 @@ class KerasTextClassifier(object):
             **kwargs):
 
         self.vocab = vocab
-
         self.train_embeddings = train_embeddings
         self.vocab_size = None
         self.batch = batch
@@ -92,6 +92,9 @@ class KerasTextClassifier(object):
     def build_model(self):
         sequence_input = Input(shape=(self.max_seq_len,), dtype='int32')
         embedding_layer = self.build_embedding_layer()
+        print(embedding_layer)
+        import pdb
+        pdb.set_trace()
         embedded_sequences = embedding_layer(sequence_input)
         predictions = self.transform_embedded_sequences(embedded_sequences)
         model = Model(sequence_input, predictions)
