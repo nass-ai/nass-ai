@@ -57,9 +57,9 @@ def nassai_cli(action, cbow, batch, epoch, using, dbow, mode, text, use_glove=1)
         elif mode == "word2vec":
             if using == "sklearn":
                 model_list = [
-                            #   ("bnb_mean_embedding", BernNB(use_glove=True, use_tfidf=False, tfidf="mean_embedding")),
-                            #   ("svm_mean_embedding", (SVM(use_glove=True, use_tfidf=False, tfidf="mean_embedding"))),
-                            #   ("linear_svm_mean_embedding", LinearSVM(use_glove=True, use_tfidf=False, tfidf="mean_embedding")),
+                              ("bnb_mean_embedding", BernNB(use_glove=True, use_tfidf=False, tfidf="mean_embedding")),
+                              ("svm_mean_embedding", (SVM(use_glove=True, use_tfidf=False, tfidf="mean_embedding"))),
+                              ("linear_svm_mean_embedding", LinearSVM(use_glove=True, use_tfidf=False, tfidf="mean_embedding")),
 
                               ("bnb_tfidfemmbedding", BernNB(use_glove=True, use_tfidf=True, tfidf="tfidf_embedding_vectorizer")),
                               ("svm_tfidfembedding", (SVM(use_glove=True, use_tfidf=True, tfidf="tfidf_embedding_vectorizer"))),
@@ -93,14 +93,16 @@ def run(model_list, mode, **kwargs):
     print("TRAINING : {}".format(mode))
     for model in model_list:
         print("Current Model : {}".format(model))
-        score = train(clf=model, data=clean_data_path, name="{}_{}".format(model[0], mode), **kwargs)
+        score, duration = train(clf=model, data=clean_data_path, name="{}_{}".format(model[0], mode), **kwargs)
         records.update({
             'date': datetime.now(),
             'f1': score,
             'mode': mode,
+            'duration': duration,
             'model_name': model[0],
             'using': kwargs.get('using')
         })
+        print("{0} took {1}".format(model, duration))
         with open(results_path, 'a') as f:
             w = csv.DictWriter(f, records.keys())
             w.writerow(records)

@@ -15,6 +15,8 @@ from code.sklearn_classifiers import SklearnClassifierWrapper, MLP
 from code.utils import show_report, batch_generator, get_path, cache
 
 
+import time
+
 def star(f):
     return lambda args: f(*args)
 
@@ -55,7 +57,8 @@ def train(clf, **kwargs):
 
         if clf[0].startswith("mlp_"):
             pipe = Pipeline([("vectorizer", TfidfVectorizer(min_df=0.2)), ('tfidf', TfidfTransformer(use_idf=True)), ("model", KerasClassifier(build_fn=model, callbacks =[tensorboard_callback, early_stopping], epochs=50, batch_size=512))])
-            return fit_and_report(pipe, train_data, test_data, y_train, y_test, unique, name=kwargs.get('name'))
+            start = time.time()
+            return fit_and_report(pipe, train_data, test_data, y_train, y_test, unique, name=kwargs.get('name'), start=start)
 
         else:
             train_data = tok.texts_to_matrix(train_data)
@@ -77,7 +80,8 @@ def train(clf, **kwargs):
                     steps_per_epoch=valid_gen.shape[0] // batch_size,
                     validation_steps=test_padded.shape[0] // batch_size,
                     callbacks=[early_stopping, tensorboard_callback])
-                return fit_and_report(model, train_data, test_data, y_train, y_test, unique, kwargs.get('name'))
+                start = time.time()
+                return fit_and_report(model, train_data, test_data, y_train, y_test, unique, kwargs.get('name'),start=start)
 
             else:
                 print("Length of Vocab : {}".format(len(vocab)))
@@ -86,7 +90,8 @@ def train(clf, **kwargs):
                     train_padded, y_train,
                     validation_data=[test_padded, y_test]
                 )
-                return fit_and_report(model, train_data, test_data, y_train, y_test, unique, kwargs.get('name'))
+                start = time.time()
+                return fit_and_report(model, train_data, test_data, y_train, y_test, unique, kwargs.get('name'),start=start)
 
     if isinstance(model, MLP):
         texts, labels, unique, vocab, tok = prepare_data(do_decode=True)
@@ -94,7 +99,8 @@ def train(clf, **kwargs):
         y_train, y_test = train_test_split(labels, test_size=0.2, random_state=42)
         pipe = Pipeline([("vectorizer", TfidfVectorizer(min_df=0.2)), ('tfidf', TfidfTransformer(use_idf=True)), ("model", KerasClassifier(build_fn=model, callbacks =[tensorboard_callback, early_stopping], layers=kwargs.get('layers'),
                                                                                                                                            dropout_rate=kwargs.get('dropout_rate'), epochs=50, batch_size=512))])
-        return fit_and_report(pipe, train_data, test_data, y_train, y_test, unique, kwargs.get('name'))
+        start = time.time()
+        return fit_and_report(pipe, train_data, test_data, y_train, y_test, unique, kwargs.get('name'),start=start)
         
 
     else:
@@ -103,14 +109,18 @@ def train(clf, **kwargs):
         train_data, test_data = train_test_split(texts, test_size=0.2, random_state=42)
         y_train, y_test = train_test_split(labels, test_size=0.2, random_state=42)
         model.set_up(vocab)
-        return fit_and_report(model, train_data, test_data, y_train, y_test, unique, name=kwargs.get('name'))
+        start = time.time()
+        return fit_and_report(model, train_data, test_data, y_train, y_test, unique, name=kwargs.get('name'),start=start)
 
 
-def fit_and_report(model, train_data, test_data, y_train, y_test, labels, name):
+def fit_and_report(model, train_data, test_data, y_train, y_test, labels, name, start):
     model.fit(train_data, y_train)
     y_pred = model.predict(test_data)
+    end = time.time()
+    
+    duration = end - start
 
     import numpy
     numpy.savez_compressed("{}.npz".format(name), test=y_test, predictions=y_pred)
 
-    return show_report(y_test, y_pred, labels)
+    return show_report(y_test, y_pred, labels, duration)

@@ -41,14 +41,14 @@ def handle_format(text_list, train=True):
     return output
 
 
-def show_report(y_test, y_pred, classes):
+def show_report(y_test, y_pred, classes, duration):
     print(metrics.classification_report(y_test, y_pred, target_names=classes))
     print()
     accuracy = metrics.accuracy_score(y_test, y_pred)
     f1 = metrics.f1_score(y_test, y_pred, average='macro')
     print("Average Accuracy : {}".format(accuracy))
     print("Average F1 : {}".format(f1))
-    return f1
+    return f1, duration
 
 
 def evaluate_and_log(model, test_data, y_test, result):
