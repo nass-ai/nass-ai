@@ -1,6 +1,12 @@
-# NASS-AI : Parliamentary Bills Classification usingDocument Level Embedding and Bidirectional LongShort-Term Memory
+# NASS-AI: Towards Digitization of Parliamentary Bills using Document Level Embedding and Bidirectional Long Short-Term Memory
 
-Code for [add paper link here]()
+Code for [https://arxiv.org/abs/1910.04865]()
+
+A. Akinfaderin and O. Wahab. NASS-AI: Towards Digitization of Parliamentary Bills using Document Level Embedding and Bidirectional Long Short-Term Memory. To appear in the Proceedings of NeurIPS 2019 Workshop on Machine Learning for the Developing World, Vancouver, Canada, December 2019. 7 pages.
+
+## Dataset Samples from Nigerian Parliamentary Bills
+
+
 
 
 ### Dependencies
