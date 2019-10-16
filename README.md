@@ -5,7 +5,7 @@ Code for [https://arxiv.org/abs/1910.04865]()
 A. Akinfaderin and O. Wahab. NASS-AI: Towards Digitization of Parliamentary Bills using Document Level Embedding and Bidirectional Long Short-Term Memory. To appear in the Proceedings of NeurIPS 2019 Workshop on Machine Learning for the Developing World, Vancouver, Canada, December 2019. 7 pages.
 
 ## Dataset Samples from Nigerian Parliamentary Bills
-
+![Image description](https://www.google.com/url?sa=i&rct=j&q=&esrc=s&source=images&cd=&ved=2ahUKEwjI9qv8w6HlAhUHTKwKHZSFBkYQjRx6BAgBEAQ&url=https%3A%2F%2Fassert.pub%2Fpapers%2F1910.04865&psig=AOvVaw0M7UPZa6csfabdLboCzLTA&ust=1571341118650910)
 
 
 
