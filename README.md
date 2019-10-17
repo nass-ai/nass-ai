@@ -12,7 +12,7 @@ A. Akinfaderin and O. Wahab. NASS-AI: Towards Digitization of Parliamentary Bill
 ### Dependencies
 * Python3 (tested on 3.5, 3.6, 3.7)
 * Install all dependencies: `pip install -r requirements.txt`
-* Note that NLTK will need some extra hand-holding if you've installed it for the first time: 
+* Note that NLTK will need some extra steps if you've just installed it for the first time: 
 ```
 Resource stopwords not found.
 Please use te NLTK Downloader to obtain the resource:
@@ -21,12 +21,12 @@ Please use te NLTK Downloader to obtain the resource:
 ```
 
 ### Running on Colab
-You can replicate the project (using our default settings) using the colab notebook here.
+You can replicate the project (train and predict using our default settings) using the colab notebook here.
 
 
 ### Training your own models
 
-* The models are trained on the [NASS]() data crawl (Last update was on)
+* The models are trained on the [NASS]() data crawl (Last update was on [insert date])
 	
 * To start data preprocessing, go to the top-level directory and run:
 ```python nass_ai preprocess --data [data_path]``` where:
@@ -37,6 +37,22 @@ You can replicate the project (using our default settings) using the colab noteb
         
 For word2vec:
 ``
-nassai.py build_embedding --dbow=1
+nassai.py build_embedding --cbow=[0 for cbow 1 for skipgram] --size=[your embedding size] 
+--epoch=[epoch choice]
 ``
-    
+
+For doc2vec:
+``
+nassai.py build_embedding --dbow=[0 for dbow 1 for dm] --size=[your embedding size] --epoch=[epoch choice]
+``
+
+* If you'd rather use glove as opposed to building your own embeddings, download GLOVE from [insert GLOVE link]() and unzip it into the models folder.
+
+* You can then go ahead to train by running:
+``python nass_ai train --epochs=[] --batch=[] --use_glove``
+
+The above command runs data against all the available algorithms listed below.
+
+You can also choose your algorithm by running:
+
+``python nass_ai train --mode=[word2vec|doc2vec] --using=[sklearn|keras] --epochs=[] --batch=[] --use_glove=[0|1]``
