@@ -29,16 +29,13 @@ You can replicate the project (train and predict using our default settings) usi
 * The models are trained on the [NASS]() data crawl (Last update was on [insert date])
 	
 * To start data preprocessing, go to the top-level directory and run:
-```python nass_ai preprocess --data [data_path]``` where:
-    
-    --data_path = Path to downloaded NASS crawl.
+```python nass_ai preprocess --data [data_path]``` where: --data_path = Path to downloaded NASS crawl.
     
 * Then, build word2vec and doc2vec embeddings.
         
     For word2vec:
     ``
-    nassai.py build_embedding --cbow=[0 for cbow 1 for skipgram] --size=[your embedding size] 
-    --epoch=[epoch choice]
+    nassai.py build_embedding --cbow --epoch=[epoch choice]
     ``
 
     For doc2vec:
