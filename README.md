@@ -35,16 +35,16 @@ You can replicate the project (train and predict using our default settings) usi
     
 * Then, build word2vec and doc2vec embeddings.
         
-For word2vec:
-``
-nassai.py build_embedding --cbow=[0 for cbow 1 for skipgram] --size=[your embedding size] 
---epoch=[epoch choice]
-``
+    For word2vec:
+    ``
+    nassai.py build_embedding --cbow=[0 for cbow 1 for skipgram] --size=[your embedding size] 
+    --epoch=[epoch choice]
+    ``
 
-For doc2vec:
-``
-nassai.py build_embedding --dbow=[0 for dbow 1 for dm] --size=[your embedding size] --epoch=[epoch choice]
-``
+    For doc2vec:
+    ``
+    nassai.py build_embedding --dbow=[0 for dbow 1 for dm] --size=[your embedding size]     --epoch=[epoch choice]
+    ``
 
 * If you'd rather use glove as opposed to building your own embeddings, download GLOVE from [insert GLOVE link]() and unzip it into the models folder.
 
