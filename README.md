@@ -5,9 +5,13 @@ Code for [https://arxiv.org/abs/1910.04865]()
 A. Akinfaderin and O. Wahab. NASS-AI: Towards Digitization of Parliamentary Bills using Document Level Embedding and Bidirectional Long Short-Term Memory. To appear in the Proceedings of NeurIPS 2019 Workshop on Machine Learning for the Developing World, Vancouver, Canada, December 2019. 7 pages.
 
 ## Dataset Samples from Nigerian Parliamentary Bills
-![Image description](https://s3.amazonaws.com/assertpub/image/1910.04865v1/image-002-000.png)
+![Three different bills showing some of the challenging quality of our parliamentary bills. Left: a bill to regulate local government elections. Center: a bill to prohibit the use of life bullets or Nigerian army to quell civil protests. Right: a bill to provide free screening and treatment of cancer and brain tumor.](https://s3.amazonaws.com/assertpub/image/1910.04865v1/image-002-000.png)
 
+### Link to Nigerian parliamentary bills from 1999-2018 in PDF format (pre-OCR)
 
+Dataset: [https://drive.google.com/open?id=19bxftHKcAe8Lq_yH3w8xNMVI9gVInQp8]()
+
+Raw data for parliamentary proceedings are available upon request.
 
 ### Dependencies
 * Python3 (tested on 3.5, 3.6, 3.7)
@@ -56,3 +60,7 @@ The above command runs data against all the available algorithms listed below.
 You can also choose your algorithm by running:
 
 ``python nass_ai train --mode=[word2vec|doc2vec] --using=[sklearn|keras] --epochs=[] --batch=[] --use_glove=[0|1]``
+
+## Credits/Authors
+
+Adewale Akinfaderin and Olamilekan Wahab 
