@@ -5,44 +5,32 @@ Code for [add paper link here]()
 
 ### Dependencies
 * Python3 (tested on 3.5, 3.6, 3.7)
-* Install all dependencies: `pip3 install -r requirements.txt`
-
-### Reproduction Option #1
-Run this notebook [Add notebook link here]()
-
-### Reproduction Option #2
-
-1) From the top-level directory, run `python nass_ai predict --data bill.txt --dbow=1` where :
-
-    ```
-    --data = Path of bill to predict
-    
-    --dbow = Predict using DBOW doc2vec model or DM doc2vec model
-    ```
-
-### Train your own model
-
-* Your data should be a csv with 2 columns bill_text and bill_class
-
-* Install dependencies: `pip3 install -r requirements.txt`
+* Install all dependencies: `pip install -r requirements.txt`
 * Note that NLTK will need some extra hand-holding if you've installed it for the first time: 
-	```
-	Resource stopwords not found.
-  	Please use the NLTK Downloader to obtain the resource:
+```
+Resource stopwords not found.
+Please use te NLTK Downloader to obtain the resource:
+>>> import nltk
+>>> nltk.download('stopwords')
+```
 
-  	>>> import nltk
-  	>>> nltk.download('stopwords')
-	```
+### Running on Colab
+You can replicate the project (using our default settings) using the colab notebook here.
+
+
+### Training your own models
+
+* The models are trained on the [NASS]() data crawl (Last update was on)
 	
-To start data-prep, go to the top-level directory and run:
-    `python nass_ai preprocess --data [data_path.txt]` where:
+* To start data preprocessing, go to the top-level directory and run:
+```python nass_ai preprocess --data [data_path]``` where:
     
-    --data_path.txt = Path of bill to predict
+    --data_path = Path to downloaded NASS crawl.
     
-    --dbow = Predict using DBOW doc2vec model or DM doc2vec model
-    
-You can then build your doc2vec model by running:
+* Then, build word2vec and doc2vec embeddings.
+        
+For word2vec:
 ``
-nassai.py train_doc2vec --dbow=1
+nassai.py build_embedding --dbow=1
 ``
     

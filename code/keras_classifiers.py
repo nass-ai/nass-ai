@@ -5,9 +5,8 @@ from keras.layers import Dense, Input, Flatten
 from keras.layers import Embedding
 from keras.models import Model
 from keras.callbacks import EarlyStopping
-from keras.engine import InputLayer
 
-from code.sklearn_classifiers import get_glove, load_word2vec
+from code.sklearn_classifiers import get_vectors, load_word2vec
 from code.utils import f1, batch_generator
 
 
@@ -62,7 +61,7 @@ class KerasTextClassifier(object):
             if not self.use_glove:
                 self.embedding_matrix = load_word2vec(self.embedding_path)
             else:
-                self.embedding_matrix = get_glove(vocab=self.vocab)
+                self.embedding_matrix = get_vectors(vocab=self.vocab)
             trainable = False
 
         embedding_layer = Embedding(

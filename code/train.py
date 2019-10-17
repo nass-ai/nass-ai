@@ -17,6 +17,7 @@ from code.utils import show_report, batch_generator, get_path, cache
 
 import time
 
+
 def star(f):
     return lambda args: f(*args)
 

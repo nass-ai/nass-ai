@@ -6,15 +6,13 @@ import pandas
 import nltk
 from code.utils import get_path
 
-nltk.download('stopwords')
-
 
 def clean_text(text):
     text = re.sub(r"[^A-Za-z0-9^,!.\/'+-=]", " ", text)
-    text = text.translate(str.maketrans("", "", string.punctuation)) #Punctuation
-    text = nltk.word_tokenize(text) #Tokenization
+    text = text.translate(str.maketrans("", "", string.punctuation))
+    text = nltk.word_tokenize(text)
     text = " ".join(text)
-    text = re.sub(r'\d+', '', text) #Digit
+    text = re.sub(r'\d+', '', text)
     return text
 
 

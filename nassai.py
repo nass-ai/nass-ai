@@ -1,29 +1,29 @@
 import csv
-import os
 from datetime import datetime
 
 import click
 
 from code.custom import LSTMClassifier, BLSTM2DCNN, FCholletCNN, YKimCNN
-from code.mlp import mlp_model
 from code.sklearn_classifiers import BernNB, SVM, LinearSVM, MLP
 from code.train import train
 from code.utils import get_path, load_model
-from code.build import BuildEmbeddingModel
+from code.build import Embedding
 
 
 @click.command()
 @click.argument('action', type=click.Choice(['preprocess', 'build_embedding', 'train', 'predict']))
-@click.option('--dbow', type=click.INT, default=1, help='Uses DBOW if true. DM if false.')
+@click.option('--dbow/--dm', default=False, help="DM or DBOW. Defaults to dm.")
 @click.option('--use_glove', type=click.INT, default=1, help='Train classifier with glove embedding or prebuilt embedding from this data.')
-@click.option('--cbow', type=click.INT, default=1, help='Uses DBOW if true. DM if false.')
-@click.option('--batch', type=click.INT, default=200, help='Batch for training keras model')
-@click.option('--epoch', type=click.INT, default=200, help='Epoch for training keras model')
+@click.option('--cbow/--skipgram', default=True, help='Skipgram or cbow. Defaults to CBOW')
+@click.option('--batch', type=click.INT, default=100, help='Batch for trainings.')
+@click.option('--epoch', type=click.INT, default=5, help='Epoch for training model')
+@click.option('--using', type=click.Choice(['sklearn', 'keras']), help='Algorithm to train data on.')
 @click.option('--using', type=click.Choice(['sklearn', 'keras']), help='Algorithm to train data on.')
 @click.option('--mode', type=click.Choice(['tfidf', 'doc2vec', 'word2vec']), help='Algorithm to train data on.')
 @click.option('--text', type=click.STRING, help="String to predict for")
-def nassai_cli(action, cbow, batch, epoch, using, dbow, mode, text, use_glove=1):
-    base_data_path = get_path('data') + "/final_with_dates.csv"
+@click.option('--data', type=click.Path(exists=True), help="NASS Data Crawl path")
+def nassai_cli(action, cbow, batch, epoch, using, dbow, mode, text, data, use_glove=1):
+    base_data_path = data
     clean_data_path = get_path('data') + "/clean_data.csv"
 
     if action == "preprocess":
@@ -31,10 +31,10 @@ def nassai_cli(action, cbow, batch, epoch, using, dbow, mode, text, use_glove=1)
         return preprocessing.preprocess_data(base_data_path)
     elif action == "build_embedding":
         if mode == "doc2vec":
-            builder = BuildEmbeddingModel(embedding_type="doc2vec", data=clean_data_path, doc2vec_mode=dbow, epoch=epoch, batch=batch)
-            return builder.build_model()
-        builder = BuildEmbeddingModel(embedding_type="word2vec", data=clean_data_path, word2vec_mode=cbow, epoch=epoch, batch=batch)
-        return builder.build_model()
+            builder = Embedding(embedding_type="doc2vec", data=clean_data_path, mode=dbow, epoch=epoch, batch=batch)
+            return builder.build()
+        builder = Embedding(embedding_type="word2vec", data=clean_data_path, mode=cbow, epoch=epoch, batch=batch)
+        return builder.build()
     elif action == "train":
         if mode == "doc2vec":
             embedding = get_path('models') + '/doc2vec/nassai_dbow_doc2vec.vec'
