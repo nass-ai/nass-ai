@@ -17,7 +17,7 @@ class KerasTextClassifier(object):
             self,
             vocab=None,
             batch=False,
-            use_glove=False,
+            glove=False,
             dropout_rates=None,
             train_embeddings=False,
             embedding_path=None,
@@ -38,7 +38,7 @@ class KerasTextClassifier(object):
         self.patience = 3
         self.history = None
         self.model = None
-        self.use_glove = use_glove
+        self.use_glove = glove
         self.embedding_matrix = {}
 
         self.params = {

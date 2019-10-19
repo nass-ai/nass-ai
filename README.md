@@ -32,33 +32,29 @@ You can replicate the project (train and predict using our default settings) usi
 
 ### Training your own models
 
-* The models are trained on the [NASS]() data crawl (Last update was on [insert date])
 	
 * To start data preprocessing, go to the top-level directory and run:
-```python nass_ai preprocess --data [data_path]``` where: --data_path = Path to downloaded NASS crawl.
+```python nassai.py preprocess --data [data_path]``` where: --data_path = Path to downloaded NASS crawl.
     
 * Then, build word2vec and doc2vec embeddings.
         
     For word2vec:
     ``
-    nassai.py build_embedding --cbow --epoch=[epoch choice]
+    python nassai.py build_embedding --cbow --epoch=[epoch choice]
     ``
 
     For doc2vec:
     ``
-    nassai.py build_embedding --dbow=[0 for dbow 1 for dm] --size=[your embedding size]     --epoch=[epoch choice]
+    python nassai.py build_embedding --dbow --epoch=[epoch choice]
     ``
 
 * If you'd rather use glove as opposed to building your own embeddings, download GLOVE from [insert GLOVE link]() and unzip it into the models folder.
 
 * You can then go ahead to train by running:
-``python nass_ai train --epochs=[] --batch=[] --use_glove``
+``python nassai train --mode=[all|word2vec|doc2vec] --epochs=10 --batch=50 --glove``
 
-The above command runs data against all the available algorithms listed below.
-
-You can also choose your algorithm by running:
-
-``python nass_ai train --mode=[word2vec|doc2vec] --using=[sklearn|keras] --epochs=[] --batch=[] --use_glove=[0|1]``
+*Finally, to predict:
+``python nassai.py predict --bill=[path_to_bill]``
 
 ## Credits/Authors
 

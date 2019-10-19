@@ -1,14 +1,10 @@
 import csv
 import os
-import pandas
 from collections import defaultdict
 
 import numpy
 from gensim.models.doc2vec import TaggedDocument
 from pathlib import Path
-
-from gensim.utils import simple_preprocess
-from keras.preprocessing.text import Tokenizer
 from sklearn import metrics
 from sklearn.externals import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -45,10 +41,10 @@ def show_report(y_test, y_pred, classes, duration):
     print(metrics.classification_report(y_test, y_pred, target_names=classes))
     print()
     accuracy = metrics.accuracy_score(y_test, y_pred)
-    f1 = metrics.f1_score(y_test, y_pred, average='macro')
+    f1_score = metrics.f1_score(y_test, y_pred, average='macro')
     print("Average Accuracy : {}".format(accuracy))
     print("Average F1 : {}".format(f1))
-    return f1, duration
+    return f1_score, duration
 
 
 def evaluate_and_log(model, test_data, y_test, result):
@@ -127,21 +123,8 @@ def log_results(data):
     file_path = get_path('data/results.csv')
     with open(file_path, 'a') as f:
         w = csv.DictWriter(f, data.keys())
-        # w.writeheader()
         w.writerow(data)
     return True
-
-
-def get_vectors(model, data, get_for='train'):
-    def vec(corpus_size, get_for):
-            vec = numpy.zeros((corpus_size, VECTOR_SIZE))
-            for i in range(0, corpus_size):
-                prefix = get_for + '_' + str(i)
-                vec[i] = model.docvecs[prefix]
-            return vec
-    vectors = handle_format(data, True)
-    vectors = vec(len(vectors), get_for)
-    return vectors
 
 
 def encode_label(data):
@@ -188,20 +171,7 @@ def batch_generator(X, y, batch_size):
     """
 
     while True:
-        idx = numpy.random.randint(0, X.shape[0], size=16)
+        idx = numpy.random.randint(0, X.shape[0], size=batch_size)
         npr = X[idx]
         label = y[idx]
         yield npr, label
-
-    # while True:
-    #         npr_b = []
-    #         y_b = []
-    #         # choose batch_size random images / labels from the data
-    #         idx = numpy.random.randint(0, X.shape[0], size=1886)
-    #         for i in idx:
-    #             npr_b.append(X[i])
-    #             y_b.append(y[i])
-    #         npr = numpy.array(npr_b)
-    #         label = numpy.array(y)
-    #
-    #         yield (npr, label)

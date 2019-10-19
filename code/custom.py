@@ -15,7 +15,7 @@ class BLSTM2DCNN(KerasTextClassifier):
     def __init__(
             self,
             batch,
-            use_glove,
+            glove,
             train_embeddings=False,
             embedding_path=None,
             units=128,
@@ -25,7 +25,7 @@ class BLSTM2DCNN(KerasTextClassifier):
     ):
         super(BLSTM2DCNN, self).__init__(
             batch=batch,
-            use_glove=use_glove,
+            glove=glove,
             train_embeddings=train_embeddings,
             embedding_path=embedding_path
         )
@@ -58,14 +58,14 @@ class FCholletCNN(KerasTextClassifier):
     def __init__(
             self,
             batch,
-            use_glove,
+            glove,
             train_embeddings=False,
             embedding_path=None,
             units=128,
             dropout_rates=0.25):
         super(FCholletCNN, self).__init__(
             batch=batch,
-            use_glove=use_glove,
+            glove=glove,
             train_embeddings=train_embeddings,
             embedding_path=embedding_path
         )
@@ -100,7 +100,7 @@ class LSTMClassifier(KerasTextClassifier):
     def __init__(
             self,
             batch,
-            use_glove,
+            glove,
             bidirectional=True,
             train_embeddings=False,
             embedding_path=None,
@@ -111,7 +111,7 @@ class LSTMClassifier(KerasTextClassifier):
     ):
         super(LSTMClassifier, self).__init__(
             batch=batch,
-            use_glove=use_glove,
+            glove=glove,
             train_embeddings=train_embeddings,
             embedding_path=embedding_path
         )
@@ -150,7 +150,7 @@ class YKimCNN(KerasTextClassifier):
     def __init__(
             self,
             batch,
-            use_glove,
+            glove,
             train_embeddings=False,
             embedding_path=None,
             units=64,
@@ -160,7 +160,7 @@ class YKimCNN(KerasTextClassifier):
     ):
         super(YKimCNN, self).__init__(
             batch=batch,
-            use_glove=use_glove,
+            glove=glove,
             train_embeddings=train_embeddings,
             embedding_path=embedding_path
         )

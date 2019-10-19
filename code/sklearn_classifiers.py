@@ -4,15 +4,15 @@ from gensim.models import Word2Vec
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer, HashingVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC, LinearSVC
 
-from code.utils import get_path, cache, MeanEmbeddingVectorizer, TfidfEmbeddingVectorizer, encode_label, f1
+from code.utils import get_path, MeanEmbeddingVectorizer, TfidfEmbeddingVectorizer, encode_label, f1
 
-@cache
+
 def get_vectors(vocab):
     embeddings_matrix = {}
     print("Loading Glove Embeddings.")
@@ -22,11 +22,10 @@ def get_vectors(vocab):
     common = set(vocab) & set(words_in_model)
     print("Found {} common words".format(len(common)))
     for word in common:
-       embeddings_matrix[word] = model.wv.word_vec(word)
+        embeddings_matrix[word] = model.wv.word_vec(word)
     return embeddings_matrix
 
 
-@cache
 def get_glove(vocab):
     print("Loading Glove")
     embeddings_matrix = {}
@@ -40,7 +39,6 @@ def get_glove(vocab):
         return embeddings_matrix
 
 
-@cache
 def load_word2vec(embedding_path):
     print("Loading embedding")
     model = Word2Vec.load(embedding_path)
@@ -53,7 +51,7 @@ def prep(x):
 
 
 class SklearnClassifierWrapper(object):
-    def __init__(self, model, use_glove, use_tfidf, tfidf=None, embedding_path=None, name="SklearnClassifierWrapper"):
+    def __init__(self, model, glove, use_tfidf=False, tfidf=None, embedding_path=None, name="SklearnClassifierWrapper"):
         """
         Classifier made up of a pipeline with a count vectorizer + given model
         :param model: a sklearn-like classifier (with fit, predict and predict_proba)
@@ -61,7 +59,7 @@ class SklearnClassifierWrapper(object):
         """
         self.embedding_index = {}
         self.embedding_path = embedding_path
-        self.use_glove = use_glove
+        self.glove = glove
         self.vocab = None
         self.use_tfidf = use_tfidf
         self.tfidf = tfidf
@@ -71,18 +69,18 @@ class SklearnClassifierWrapper(object):
 
     def set_up(self, vocab):
         self.vocab = vocab
-        if not self.use_glove and not self.use_tfidf:
+        if not self.glove and not self.use_tfidf:
             self.embedding_index = load_word2vec(self.embedding_path)
 
-        elif self.use_glove:
+        elif self.glove:
             self.embedding_index = get_vectors(vocab=self.vocab)
 
         if self.use_tfidf:
-            vectorizer_class = HashingVectorizer
+            vectorizer_class = TfidfVectorizer
             vectorizer = vectorizer_class(
                 preprocessor=lambda x: map(str, x),
                 tokenizer=lambda x: x)
-            self.clf = Pipeline([('mean_embedding_vectorizer', vectorizer), ("transformer", TfidfTransformer()), ("model", self.model)])
+            self.clf = Pipeline([('default', vectorizer), ("transformer", TfidfTransformer()), ("model", self.model)])
         else:
             if self.tfidf == "mean_embeding":
                 self.clf = Pipeline([('mean_embedding_vectorizer', MeanEmbeddingVectorizer(self.embedding_index, 300)), ("model", self.model)])
@@ -142,9 +140,9 @@ class MLP(SklearnClassifierWrapper):
 
         max_seq_len = 1
 
-        layers=1
-        units=256
-        dropout_rate=0.25
+        layers = 1
+        units = 256
+        dropout_rate = 0.25
 
         model = Sequential()
         for i in range(layers):
