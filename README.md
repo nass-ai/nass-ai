@@ -5,9 +5,13 @@ Code for [https://arxiv.org/abs/1910.04865]()
 A. Akinfaderin and O. Wahab. NASS-AI: Towards Digitization of Parliamentary Bills using Document Level Embedding and Bidirectional Long Short-Term Memory. To appear in the Proceedings of NeurIPS 2019 Workshop on Machine Learning for the Developing World, Vancouver, Canada, December 2019. 7 pages.
 
 ## Dataset Samples from Nigerian Parliamentary Bills
-![](https://s3.amazonaws.com/assertpub/image/1910.04865v1/image-002-000.png)
+![](data/bill_examples.png)
 
 Three different bills showing some of the challenging quality of our parliamentary bills. Left: a bill to regulate local government elections. Center: a bill to prohibit the use of life bullets or Nigerian army to quell civil protests. Right: a bill to provide free screening and treatment of cancer and brain tumor.
+
+![](data/bill_dist.png)
+
+Distribution of the class labels in our dataset.
 
 ### Link to Nigerian parliamentary bills from 1999-2018 in PDF format (pre-OCR)
 
