@@ -9,6 +9,10 @@ A. Akinfaderin and O. Wahab. NASS-AI: Towards Digitization of Parliamentary Bill
 
 Three different bills showing some of the challenging quality of our parliamentary bills. Left: a bill to regulate local government elections. Center: a bill to prohibit the use of life bullets or Nigerian army to quell civil protests. Right: a bill to provide free screening and treatment of cancer and brain tumor.
 
+![](data/bill_examples.png)
+
+Distribution of the class labels in our dataset.
+
 ### Link to Nigerian parliamentary bills from 1999-2018 in PDF format (pre-OCR)
 
 Dataset: [https://drive.google.com/open?id=19bxftHKcAe8Lq_yH3w8xNMVI9gVInQp8]()
