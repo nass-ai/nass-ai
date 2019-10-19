@@ -57,7 +57,7 @@ You can replicate the project (train and predict using our default settings) usi
 * You can then go ahead to train by running:
 ``python nassai train --mode=[all|word2vec|doc2vec] --epochs=10 --batch=50 --glove``
 
-*Finally, to predict:
+* Finally, to predict:
 ``python nassai.py predict --bill=[path_to_bill]``
 
 ## Credits/Authors
